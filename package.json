@@ -1,0 +1,18 @@
+{
+    "name": "node-react",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "client": "npm run start --prefix ./client",
+        "server": "npm run start --prefix ./api",
+        "dev": "concurrently \"npm run server\" \"npm run client\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "concurrently": "^5.2.0"
+    }
+}
