@@ -14,7 +14,17 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    messagesRead: [{
+        date: {
+            type: Date,
+            default: Date.now()
+        },
+        to: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    }]
 }) ;
 
 module.exports = model('User', userSchema);

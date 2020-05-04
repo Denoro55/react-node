@@ -4,15 +4,16 @@ const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
 const mongoose = require('mongoose');
+const addRequestId = require('express-request-id');
 
 const config = require('config');
 
 // routes
-const apiRoutes = require('./routes/api');
 
 const PORT = config.get('PORT');
 
 app.use(cors());
+// app.use(addRequestId());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(session({
@@ -30,6 +31,8 @@ app.get('/server', function (req, res) {
     req.session.user = req.session.user ? req.session.user + 1 : 1;
     res.send('Counter ' + req.session.user);
 });
+
+const apiRoutes = require('./routes/api');
 
 app.use('/api', apiRoutes);
 

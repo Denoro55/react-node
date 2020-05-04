@@ -6,15 +6,15 @@ import mySaga from './sagas'
 
 const sagaMiddleware = createSagaMiddleware();
 
-const reduxDevTools = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
+// const reduxDevTools = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
 
 const logMiddleware = () => (next) => (action) => {
     console.log(action);
     return next(action);
 };
 
-const store = createStore(reducer, compose(applyMiddleware(reduxThunk, sagaMiddleware, logMiddleware), reduxDevTools));
+const store = createStore(reducer, compose(applyMiddleware(reduxThunk, sagaMiddleware, logMiddleware)));
 
-sagaMiddleware.run(mySaga);
+// sagaMiddleware.run(mySaga);
 
 export default store;

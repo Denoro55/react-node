@@ -2,6 +2,7 @@ import React from 'react'
 import {Link, NavLink} from 'react-router-dom'
 import {connect} from 'react-redux'
 import {actionUnauthorize} from "../../store/actions";
+import './style.css'
 
 const Header = ({isAuthenticated, actionUnauthorize}) => {
     const logout = (e) => {
@@ -12,7 +13,7 @@ const Header = ({isAuthenticated, actionUnauthorize}) => {
     const renderRight = () => {
         if (isAuthenticated) {
             return (
-                <ul className="navbar-nav ml-3">
+                <ul className="navbar-nav ml-3 right">
                     <li className="nav-item">
                         <NavLink onClick={logout} activeClassName='active' className="nav-link ml-auto" to="/logout">Logout</NavLink>
                     </li>
@@ -20,7 +21,7 @@ const Header = ({isAuthenticated, actionUnauthorize}) => {
             )
         } else {
             return (
-                <ul className="navbar-nav ml-3">
+                <ul id="nav-mobile" className="right hide-on-med-and-down">
                     <li className="nav-item">
                         <NavLink activeClassName='active' className="nav-link ml-auto" to="/login">Login</NavLink>
                     </li>
@@ -32,26 +33,66 @@ const Header = ({isAuthenticated, actionUnauthorize}) => {
         }
     };
 
+    const items = [
+        {exact: true, to: '/', name: 'Home', isAuth: false},
+        {exact: true, to: '/me', name: 'Me', isAuth: true},
+        {exact: false, to: '/store', name: 'Store', isAuth: false},
+        {exact: false, to: '/messages/', name: 'Messages', isAuth: true},
+    ];
+
     return (
         <header className="header">
-            <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-                <Link className="navbar-brand" to="/">React-Node App</Link>
-                <ul className="navbar-nav ml-3 mr-auto">
-                    <li className="nav-item">
-                        <NavLink activeClassName='active' className="nav-link" exact to="/">Home</NavLink>
-                    </li>
-                    <li className="nav-item ml-1">
-                        <NavLink activeClassName='active' className="nav-link" to="/store">Store</NavLink>
-                    </li>
-                    <li className="nav-item ml-1">
-                        <NavLink activeClassName='active' className="nav-link" to="/cart">Cart</NavLink>
-                    </li>
-                    <li className="nav-item ml-1">
-                        <NavLink activeClassName='active' className="nav-link" to="/test">Test</NavLink>
-                    </li>
-                </ul>
-                { renderRight() }
+            <nav>
+                <div className="nav-wrapper">
+                    <div className="row">
+                        <div className="col s12">
+                            <Link className="navbar-brand left" to="/">Art's Store</Link>
+                            <ul id="nav-mobile" className="left hide-on-med-and-down">
+                                {
+                                    items.map((link, idx) => {
+                                        if (!isAuthenticated && link.isAuth) {
+                                            return null;
+                                        }
+
+                                        return (
+                                            <li key={idx} className="nav-item">
+                                                <NavLink activeClassName='active' className="nav-link" exact={link.exact} to={link.to}>{link.name}</NavLink>
+                                            </li>
+                                        )
+                                    })
+                                }
+                            </ul>
+                            { renderRight() }
+                        </div>
+                    </div>
+                </div>
             </nav>
+            {/*<nav className="navbar navbar-expand-lg navbar-dark bg-dark">*/}
+            {/*    <Link className="navbar-brand" to="/">Art's Store</Link>*/}
+            {/*    <ul className="navbar-nav ml-3 mr-auto">*/}
+            {/*        {*/}
+            {/*            items.map((link, idx) => {*/}
+            {/*                if (!isAuthenticated && link.isAuth) {*/}
+            {/*                    return null;*/}
+            {/*                }*/}
+
+            {/*                return (*/}
+            {/*                    <li key={idx} className="nav-item">*/}
+            {/*                        <NavLink activeClassName='active' className="nav-link" exact={link.exact} to={link.to}>{link.name}</NavLink>*/}
+            {/*                    </li>*/}
+            {/*                )*/}
+            {/*            })*/}
+            {/*        }*/}
+
+            {/*        /!*<li className="nav-item ml-1">*!/*/}
+            {/*        /!*    <NavLink activeClassName='active' className="nav-link" to="/cart">Cart</NavLink>*!/*/}
+            {/*        /!*</li>*!/*/}
+            {/*        /!*<li className="nav-item ml-1">*!/*/}
+            {/*        /!*    <NavLink activeClassName='active' className="nav-link" to="/test">Test</NavLink>*!/*/}
+            {/*        /!*</li>*!/*/}
+            {/*    </ul>*/}
+            {/*    { renderRight() }*/}
+            {/*</nav>*/}
         </header>
     )
 };

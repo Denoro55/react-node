@@ -8,7 +8,7 @@ class Store extends React.Component {
 
     render() {
         return (
-            <Redirect to="/"/>
+            <h3>Store page</h3>
         )
     }
 }

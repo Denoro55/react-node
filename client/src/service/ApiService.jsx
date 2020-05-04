@@ -2,18 +2,18 @@ import UnauthorizedError from "../errors/UnauthorizedError";
 
 class ApiService {
     URL = 'http://localhost:9000/api/';
-    authorization = '';
 
-    getRequest(url, params = {}) {
-        return fetch(`${this.URL}${url}`, params).then(res => {
-            if (res.status === 401) throw new UnauthorizedError();
-            return res.json();
-        }).then(res => res);
-    }
+    getRequest(url, params = {}, timeout = 20000) {
+        return new Promise((resolve, reject) => {
+            fetch(`${this.URL}${url}`, params).then(res => {
+                if (res.status === 401) reject(new UnauthorizedError());
+                return res.json();
+            }).then(res => resolve(res));
 
-    checkAuth() {
-        return this.getRequest('auth', {
-            method: 'POST'
+            if (timeout) {
+                const e = new Error("Connection timed out");
+                setTimeout(reject, timeout, e);
+            }
         });
     }
 
@@ -47,6 +47,36 @@ class ApiService {
             }
         });
     };
+
+    getChatMessages = (id, receiverId) => {
+        return this.getRequest('chatMessages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({id, receiverId})
+        });
+    };
+
+    getListMessages = (id) => {
+        return this.getRequest('listMessages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({id})
+        });
+    };
+
+    updateChatTime(id, receiverId) {
+        return this.getRequest('chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({id, receiverId})
+        });
+    }
 }
 
 export default ApiService;

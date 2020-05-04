@@ -1,0 +1,35 @@
+.me {
+    &__block {
+        display: flex;
+    }
+
+    &__info {
+        padding-left: 20px;
+    }
+
+    &__avatar {
+        margin-bottom: 15px;
+
+        img {
+            max-width: 300px;
+        }
+    }
+
+    &__avatar-edit {
+        padding-top: 15px;
+    }
+}
+
+.avatar-loader {
+    width: 100%;
+    display: flex;
+
+    &__left {
+        flex: 1;
+        margin-right: 15px;
+    }
+}
+
+.form-control {
+    height: auto;
+}

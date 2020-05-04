@@ -1,0 +1,22 @@
+.me__block {
+  display: flex; }
+.me__info {
+  padding-left: 20px; }
+.me__avatar {
+  margin-bottom: 15px; }
+  .me__avatar img {
+    max-width: 300px; }
+.me__avatar-edit {
+  padding-top: 15px; }
+
+.avatar-loader {
+  width: 100%;
+  display: flex; }
+  .avatar-loader__left {
+    flex: 1;
+    margin-right: 15px; }
+
+.form-control {
+  height: auto; }
+
+/*# sourceMappingURL=style.css.map */

@@ -5,6 +5,7 @@ import {BrowserRouter as Router} from "react-router-dom";
 import App from './components/app';
 import * as serviceWorker from './serviceWorker';
 import {ApiService} from "./service";
+import './style.css'
 
 import store from "./store";
 
@@ -13,29 +14,32 @@ import {getUserData} from "./store/actions";
 
 const apiService = new ApiService();
 
-// store.dispatch(authCheck());
-
 const token = localStorage.getItem('userData');
 
-// const {user} = store.getState();
+// window.M.toast({html: 'I am a toast!'});
 
 if (token) {
-    // apiService.setAuthorizationHeader(user.token);
-    store.dispatch(getUserData(apiService, token)())
+    store.dispatch(getUserData(apiService, token)()).then(e => {
+        renderDOM();
+    })
+} else {
+    renderDOM();
 }
 
-ReactDOM.render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <ApiServiceProvider value={apiService}>
-                <Router>
-                    <App/>
-                </Router>
-            </ApiServiceProvider>
-        </Provider>
-    </React.StrictMode>,
-    document.getElementById('root')
-);
+function renderDOM() {
+    ReactDOM.render(
+        <React.StrictMode>
+            <Provider store={store}>
+                <ApiServiceProvider value={apiService}>
+                    <Router>
+                        <App/>
+                    </Router>
+                </ApiServiceProvider>
+            </Provider>
+        </React.StrictMode>,
+        document.getElementById('root')
+    );
+}
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

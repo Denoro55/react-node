@@ -1,6 +1,8 @@
 const initialState = {
+    name: null,
     auth: false,
-    token: null
+    token: null,
+    id: null
 };
 
 const userReducer = (state = initialState, action) => {
@@ -8,10 +10,14 @@ const userReducer = (state = initialState, action) => {
         case 'GET_USER_SUCCESS':
         case 'AUTH_CHECK_SUCCESS':
         case 'USER_AUTHORIZE':
-            return action.payload;
+            return {
+                ...state,
+                ...action.payload
+            };
 
         case 'USER_UNAUTHORIZE':
             return  {
+                name: null,
                 auth: false,
                 token: null
             };
