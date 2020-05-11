@@ -13,12 +13,12 @@ const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const ObjectId = mongoose.Types.ObjectId;
 
-const longpoll = require('express-longpoll')(router);
-longpoll.create('/longpoll', function (req,res,next) {
-    req.id = req.query.id;
-    console.log('Longpool GET with id', req.id);
-    next();
-});
+// const longpoll = require('express-longpoll')(router);
+// longpoll.create('/longpoll', function (req,res,next) {
+//     req.id = req.query.id;
+//     console.log('Longpool GET with id', req.id);
+//     next();
+// });
 
 router.get('/foo', (req, res) => {
     res.json({a: 1})
@@ -94,30 +94,38 @@ router.post('/userData', authMiddleware, async (req, res) => {
 });
 
 router.post('/sendMessage', authMiddleware, async (req, res) => {
-    const {id, senderId, message} = req.body;
+    const {id, senderId, message, date} = req.body;
 
     const senderUser = await User.findOne({_id: senderId});
     const receiverUser = await User.findOne({_id: id});
 
-    // update chat last time watching
-    const chat = await Chat.findOne({from: senderId, to: id});
-    if (chat) {
-        await chat.update({from: senderId, to: id, date: Date.now()});
-    } else {
-        const newChat = new Chat({from: senderId, to: id, date: Date.now()});
+    // create companion chat if does not
+    const chat = await Chat.findOne({from: id, to: senderId});
+    if (!chat) {
+        const newChat = new Chat({from: id, to: senderId, date: -1});
         await newChat.save();
     }
+
+    // // // update chat last time watching
+    // const chat = await Chat.findOne({from: senderId, to: id});
+    // if (chat) {
+    //     await chat.update({from: senderId, to: id, date});
+    // } else {
+    //     const newChat = new Chat({from: senderId, to: id, date});
+    //     await newChat.save();
+    // }
 
     const newMessage = new Message({
         name: senderUser,
         text: message.text,
         from: senderUser,
         to: receiverUser,
-        date: Date.now()
+        date
     });
+
     await newMessage.save();
 
-    longpoll.publishToId('/longpoll', id, {id, senderId, message});
+    // longpoll.publishToId('/longpoll', id, {id, senderId, message});
 
     res.json({success: true});
 });
@@ -131,6 +139,8 @@ router.post('/listMessages', async (req, res) => {
 
     // await Message.remove({});
     // await Chat.remove({});
+
+    console.log('messages of ', id);
 
     const messages = await Message.aggregate([
         {
@@ -183,52 +193,104 @@ router.post('/listMessages', async (req, res) => {
                 foreignField: "_id",
                 as: "user"
             }
+        },
+        {
+            $lookup: {
+                from: "chats",
+                pipeline: [
+                    {
+                        $match: {
+                            from: ObjectId(id),
+                            to: ObjectId("$$to")
+                        },
+                    },
+                ],
+                as: "chat"
+            }
         }
     ]);
 
     const chats = await Chat.aggregate([
         {
             $match: {
-                $or: [
-                    {from: ObjectId(id)},
-                    {to: ObjectId(id)},
-                ]
+                from: ObjectId(id)
             }
         },
-        {
-            $addFields: {
-                roomId: {
-                    $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
-                },
-            }
-        },
-        {
-            $sort: {
-                date: 1
-            }
-        },
-        {
-            $group: {
-                _id: "$roomId",
-                date: {$last: "$date"},
-                from: {$last: "$from"}
-            }
-        },
+        // {
+        //     $addFields: {
+        //         roomId: {
+        //             $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
+        //         },
+        //     }
+        // },
+        // {
+        //     $sort: {
+        //         date: 1
+        //     }
+        // },
+        // {
+        //     $group: {
+        //         _id: "$roomId",
+        //         date: {$last: "$date"},
+        //         from: {$last: "$from"}
+        //     }
+        // },
         {
             $sort: {
                 date: -1
             }
         },
+        // {
+        //     $set: {
+        //         date: {
+        //             $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$date", else: -1 }
+        //         }
+        //     }
+        // }
     ]);
 
-    console.log(messages);
+    // const chats = await Chat.aggregate([
+    //     {
+    //         $match: {
+    //             $or: [
+    //                 {from: ObjectId(id)},
+    //                 {to: ObjectId(id)},
+    //             ]
+    //         }
+    //     },
+    //     {
+    //         $addFields: {
+    //             roomId: {
+    //                 $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
+    //             },
+    //         }
+    //     },
+    //     {
+    //         $sort: {
+    //             date: 1
+    //         }
+    //     },
+    //     {
+    //         $group: {
+    //             _id: "$roomId",
+    //             date: {$last: "$date"},
+    //             from: {$last: "$from"}
+    //         }
+    //     },
+    //     {
+    //         $sort: {
+    //             date: -1
+    //         }
+    //     },
+    // ]);
 
-    // console.log('chats: ', chats);
-    // console.log('messages: ', messages);
+    console.log('chats: ', chats);
+    console.log('messages: ', messages);
 
     const preparedMessages = messages.map((m, idx) => {
         const chat = chats[idx];
-        const isUpdated = chat.from.toString() !== id.toString() && chat.date < m.date;
+        const isUpdated = chat.date < m.date && chat.from.toString() !== m.from.toString();
+        // const isUpdated = chat.from.toString() !== id.toString() && chat.date < m.date;
         return {
             name: m.user[0].name,
             text: m.text,
@@ -273,23 +335,23 @@ router.post('/chatMessages', async (req, res) => {
 });
 
 router.post('/chat', async (req, res) => {
-    const {id: senderId, receiverId: id} = req.body;
+    const {id: senderId, receiverId: id, date} = req.body;
 
     // update chat last time watching
     const chat = await Chat.findOne({from: senderId, to: id});
     if (chat) {
-        await chat.updateOne({from: senderId, to: id, date: Date.now()});
+        await chat.updateOne({from: senderId, to: id, date});
     } else {
-        const newChat = new Chat({from: senderId, to: id, date: Date.now()});
+        const newChat = new Chat({from: senderId, to: id, date});
         await newChat.save();
     }
 
     res.json({success: true});
 });
 
-setInterval(() => {
-    longpoll.publish('/longpoll', {type: 'timeout'});
-}, 8000);
+// setInterval(() => {
+//     longpoll.publish('/longpoll', {type: 'timeout'});
+// }, 8000);
 
 module.exports = router;
 

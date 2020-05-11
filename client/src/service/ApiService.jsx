@@ -1,19 +1,14 @@
 import UnauthorizedError from "../errors/UnauthorizedError";
 
 class ApiService {
-    URL = 'http://localhost:9000/api/';
+    URL = '/api/';
 
-    getRequest(url, params = {}, timeout = 20000) {
+    getRequest(url, params = {}) {
         return new Promise((resolve, reject) => {
             fetch(`${this.URL}${url}`, params).then(res => {
                 if (res.status === 401) reject(new UnauthorizedError());
                 return res.json();
             }).then(res => resolve(res));
-
-            if (timeout) {
-                const e = new Error("Connection timed out");
-                setTimeout(reject, timeout, e);
-            }
         });
     }
 
@@ -68,13 +63,13 @@ class ApiService {
         });
     };
 
-    updateChatTime(id, receiverId) {
+    updateChatTime(id, receiverId, date) {
         return this.getRequest('chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({id, receiverId})
+            body: JSON.stringify({id, receiverId, date})
         });
     }
 }

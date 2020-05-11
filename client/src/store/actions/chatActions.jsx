@@ -14,7 +14,7 @@ export const fetchChat = (apiService) => (id, receiverId) => (dispatch) => {
 export const actionUpdateChatStatus = ({inChat, chatId}) => ({type: 'CHAT_STATUS_UPDATE', payload: {inChat, chatId}});
 export const addChatMessage = ({name, text}) => ({type: 'CHAT_MESSAGE_ADD', payload: {name, text}});
 
-export const actionSendMessage = (apiService) => (companion, user, message) => (dispatch) => {
+export const actionSendMessage = (apiService) => (companion, user, message, date) => (dispatch) => {
     const receiverId = companion.id;
 
     const params = {
@@ -23,16 +23,17 @@ export const actionSendMessage = (apiService) => (companion, user, message) => (
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user.token}`
         },
-        body: JSON.stringify({id: receiverId, senderId: user.id, message})
+        body: JSON.stringify({id: receiverId, senderId: user.id, message, companion, date})
     };
 
-    apiService.getRequest('sendMessage', params);
-    dispatch(addChatMessage(message));
+    return apiService.getRequest('sendMessage', params);
+
+    // dispatch(addChatMessage(message));
 
     // client messages list
-    const clientMessage = {
-        ...message,
-        name: companion.name
-    };
-    dispatch(updateMessageInList({id: receiverId, updated: false, message: clientMessage, sort: true}));
+    // const clientMessage = {
+    //     ...message,
+    //     name: companion.name
+    // };
+    // dispatch(updateMessageInList({id: receiverId, updated: false, message: clientMessage, sort: true}));
 };

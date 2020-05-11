@@ -2,12 +2,14 @@ import React, {useEffect, useRef, useState} from "react";
 import Spinner from "../spinner";
 import {connect, useSelector} from "react-redux";
 import {bindActionCreators} from "redux";
-import {fetchChat, actionUpdateChatStatus, actionSendMessage} from "../../store/actions/chatActions";
+import {fetchChat, actionUpdateChatStatus, actionSendMessage, addChatMessage} from "../../store/actions/chatActions";
 import {withApiService} from "../hoc";
+
+import socket from "../../socket";
 
 const Chat = (props) => {
     const {backToMessages, chatLoading, user,
-        companionId, fetchChat, actionUpdateChatStatus, actionSendMessage} = props;
+        companionId, fetchChat, actionUpdateChatStatus, actionSendMessage, addChatMessage} = props;
 
     const [message, setMessage] = useState('');
     const chatMessages = useSelector(state => state.chat.messages);
@@ -29,7 +31,9 @@ const Chat = (props) => {
 
     const sendMessage = (text, companion) => {
         const newMessage = {name: user.name, text};
-        actionSendMessage(companion, user, newMessage);
+        const date = Date.now();
+        actionSendMessage(companion, user, newMessage, date);
+        socket.emit('sendMessage', {toId: companionId, fromId: user.id, companion, date, message: newMessage});
     };
 
     const submitForm = (e) => {
@@ -95,6 +99,7 @@ const mapDispatchToProps = (dispatch, {apiService}) => {
     return bindActionCreators({
         fetchChat: fetchChat(apiService),
         actionUpdateChatStatus,
+        addChatMessage,
         actionSendMessage: actionSendMessage(apiService)
     }, dispatch);
 };

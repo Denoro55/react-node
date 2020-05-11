@@ -6,13 +6,26 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "client": "npm run start --prefix ./client",
-        "server": "npm run start --prefix ./api",
+        "server": "nodemon index.js",
         "dev": "concurrently \"npm run server\" \"npm run client\""
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "concurrently": "^5.2.0"
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.19.0",
+        "concurrently": "^5.2.0",
+        "config": "^3.3.1",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "express-longpoll": "0.0.6",
+        "express-request-id": "^1.4.1",
+        "express-session": "^1.17.1",
+        "express-validator": "^6.4.0",
+        "jsonwebtoken": "^8.5.1",
+        "mongoose": "^5.9.10",
+        "socket.io": "^2.3.0",
+        "socket.io-client": "^2.3.0"
     }
 }

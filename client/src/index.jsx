@@ -12,19 +12,26 @@ import store from "./store";
 import {ApiServiceProvider} from "./components/context/apiService";
 import {getUserData} from "./store/actions";
 
+import socket from "./socket";
+
 const apiService = new ApiService();
 
 const token = localStorage.getItem('userData');
 
 // window.M.toast({html: 'I am a toast!'});
 
-if (token) {
-    store.dispatch(getUserData(apiService, token)()).then(e => {
+// sockets
+socket.on('connect', function() {
+    if (token) {
+        store.dispatch(getUserData(apiService, token)()).then(e => {
+            renderDOM();
+            const id = store.getState().user.id;
+            socket.emit('connected', {id});
+        })
+    } else {
         renderDOM();
-    })
-} else {
-    renderDOM();
-}
+    }
+});
 
 function renderDOM() {
     ReactDOM.render(

@@ -16,41 +16,73 @@ import {sortMessagesList, updateMessageInList} from "../../store/actions/message
 import {addChatMessage} from "../../store/actions/chatActions";
 import {bindActionCreators} from "redux";
 
+import socket from "../../socket";
+
 class App extends React.Component {
     componentDidMount() {
-        if (this.props.user.auth) {
-            this.longpoll();
-        }
+        const {apiService, user, updateMessageInList, addChatMessage} = this.props;
+
+        // messages from me and others
+        socket.on('getMessage', (data) => {
+            const {inChat, chatId} = this.props.chat;
+            let mine = data.fromId.toString() === user.id.toString();
+
+            // update message list
+            const message = {...data.message};
+            // if mine
+            if (mine) {
+                message.name = data.companion.name;
+                updateMessageInList({id: data.toId, updated: false, message, sort: true});
+            }
+
+            if (inChat && (chatId.toString() === data.toId.toString() || chatId.toString() === data.fromId.toString())) {
+                addChatMessage(data.message);
+
+                if (!mine) {
+                    apiService.updateChatTime(user.id, data.fromId, data.date);
+                    updateMessageInList({id: data.fromId, updated: false, message, sort: true});
+                }
+            } else {
+                if (!mine) {
+                    window.M.toast({html: `<b>${data.message.name}</b>: ${data.message.text}`});
+                    updateMessageInList({id: data.fromId, updated: true, message, sort: true});
+                }
+            }
+        });
+
+        // if (this.props.user.auth) {
+        //     this.longpoll();
+        // }
     }
 
     longpoll() {
-        const {apiService, user, updateMessageInList, addChatMessage} = this.props;
-
-        apiService.getRequest(`longpoll?id=${user.id}`).then(res => {
-            // Got new message
-            console.log(res); // res.message
-            const {inChat, chatId} = this.props.chat;
-
-            // интервал ожидания
-            if (res.type === 'timeout') {
-                this.longpoll();
-                return;
-            }
-
-            if (inChat && chatId.toString() === res.senderId.toString()) {
-                addChatMessage(res.message);
-                apiService.updateChatTime(res.id, res.senderId);
-            } else {
-                window.M.toast({html: `<b>${res.message.name}</b>: ${res.message.text}`});
-                updateMessageInList({id: res.senderId, updated: true, message: res.message});
-            }
-
-            // sortMessagesList({id: res.senderId});
-            this.longpoll();
-        }).catch(e => {
-            console.log(e);
-            // this.longpoll();
-        })
+        // const {apiService, user, updateMessageInList, addChatMessage} = this.props;
+        //
+        // apiService.getRequest(`longpoll?id=${user.id}`).then(res => {
+        //     // Got new message
+        //     console.log(res); // res.message
+        //     const {inChat, chatId} = this.props.chat;
+        //
+        //     // интервал ожидания
+        //     if (res.type === 'timeout') {
+        //         this.longpoll();
+        //         return;
+        //     }
+        //
+        //     if (inChat && chatId.toString() === res.senderId.toString()) {
+        //         addChatMessage(res.message);
+        //         apiService.updateChatTime(res.id, res.senderId);
+        //     } else {
+        //         window.M.toast({html: `<b>${res.message.name}</b>: ${res.message.text}`});
+        //         updateMessageInList({id: res.senderId, updated: true, message: res.message});
+        //     }
+        //
+        //     // sortMessagesList({id: res.senderId});
+        //     this.longpoll();
+        // }).catch(e => {
+        //     console.log(e);
+        //     // this.longpoll();
+        // })
     }
 
     render() {
