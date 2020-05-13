@@ -19,11 +19,21 @@ import {bindActionCreators} from "redux";
 import socket from "../../socket";
 
 class App extends React.Component {
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log(prevProps, this.props);
+    }
+
+    getUser() {
+        const { user } = this.props;
+        return user;
+    }
+
     componentDidMount() {
-        const {apiService, user, updateMessageInList, addChatMessage} = this.props;
+        const {apiService, updateMessageInList, addChatMessage} = this.props;
 
         // messages from me and others
         socket.on('getMessage', (data) => {
+            const user = this.getUser();
             const {inChat, chatId} = this.props.chat;
             let mine = data.fromId.toString() === user.id.toString();
 
@@ -90,20 +100,18 @@ class App extends React.Component {
             <div className="App">
                 <Header />
                 <div className="content pt-3">
-                    <div className="container">
-                        <Switch>
-                            <Route path="/" exact component={Home} />
-                            <PrivateRoute exact path="/cart" component={Cart}/>
-                            <Route path="/store" component={Store} />
-                            <PrivateRoute exact path="/me" component={Me}/>
-                            <PrivateRoute exact path="/messages/" component={Messages}/>
-                            <Route path="/login" component={Login} />
-                            <Route path="/register" component={Register} />
-                            <Route path="/test" render={() => {
-                                return <h2>Test page</h2>
-                            }} />
-                        </Switch>
-                    </div>
+                    <Switch>
+                        <Route path="/" exact component={Home} />
+                        <PrivateRoute exact path="/cart" component={Cart}/>
+                        <Route path="/store" component={Store} />
+                        <PrivateRoute exact path="/me" component={Me}/>
+                        <PrivateRoute exact path="/messages/" component={Messages}/>
+                        <Route path="/login" component={Login} />
+                        <Route path="/register" component={Register} />
+                        <Route path="/test" render={() => {
+                            return <h2>Test page</h2>
+                        }} />
+                    </Switch>
                 </div>
             </div>
         );

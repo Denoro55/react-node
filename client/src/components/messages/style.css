@@ -13,7 +13,17 @@
   display: flex;
   align-items: center; }
   .message-item__content {
+    display: flex;
     flex: 1 1 auto; }
+  .message-item__avatar {
+    width: 30px;
+    margin-right: 15px;
+    padding-top: 5px; }
+    .message-item__avatar-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ddd; }
   .message-item__actions {
     flex-shrink: 0;
     padding-left: 40px;

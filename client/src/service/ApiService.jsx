@@ -33,6 +33,37 @@ class ApiService {
         });
     }
 
+    uploadAvatar(formData, token) {
+        return this.getRequest('uploadAvatar', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+    }
+
+    createPost(formData, token) {
+        return this.getRequest('createPost', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+    }
+
+    fetchPosts(id, token) {
+        return this.getRequest('posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({id, token})
+        });
+    }
+
     getUserData = (token) => {
         return this.getRequest('userData', {
             method: 'POST',

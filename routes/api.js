@@ -6,26 +6,17 @@ const config = require('config');
 const authMiddleware = require('../middleware/auth');
 const { validationResult } = require('express-validator');
 const { RegisterValidator, LoginValidator } = require('../validators');
+const fileMiddleware = require('../middleware/file');
+const timeSince = require('../utils/timeSince');
 
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
+const Post = require('../models/Post');
 const ObjectId = mongoose.Types.ObjectId;
 
-// const longpoll = require('express-longpoll')(router);
-// longpoll.create('/longpoll', function (req,res,next) {
-//     req.id = req.query.id;
-//     console.log('Longpool GET with id', req.id);
-//     next();
-// });
-
-router.get('/foo', (req, res) => {
-    res.json({a: 1})
-});
-
 router.post('/auth', (req, res) => {
-    console.log(req.session);
     const auth = req.session.auth || false;
     res.json({auth});
 });
@@ -88,7 +79,8 @@ router.post('/userData', authMiddleware, async (req, res) => {
     const user = await User.findOne({_id: req.user.userId});
     const data = {
         name: user.name,
-        id: user._id
+        id: user._id,
+        avatarUrl: user.avatarUrl
     };
     return res.json({data});
 });
@@ -164,7 +156,7 @@ router.post('/listMessages', async (req, res) => {
             $addFields: {
                 roomId: {
                     $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
-                },
+                }
             }
         },
         {
@@ -197,15 +189,42 @@ router.post('/listMessages', async (req, res) => {
         {
             $lookup: {
                 from: "chats",
+                // let: { to: "$_id", from: '$from' },
+                // pipeline: [
+                //     {
+                //         $match: {
+                //             from: ObjectId(id),
+                //             // to: ObjectId.valueOf("$$to")
+                //         }
+                //     }
+                // ],
+                // localField: "_id",    // field in the orders collection
+                // foreignField: "to",  // field in the items collection
                 pipeline: [
                     {
                         $match: {
                             from: ObjectId(id),
-                            to: ObjectId("$$to")
-                        },
-                    },
+                            to: ObjectId.valueOf("$_id")
+                        }
+                    }
                 ],
                 as: "chat"
+            }
+        },
+        {
+            $project: {
+                chat: {
+                    $filter: {
+                        input: "$chat",
+                        as: "item",
+                        cond: { $eq: [ "$$item.to", "$_id" ] }
+                    }
+                },
+                user: 1,
+                from: 1,
+                to: 1,
+                text: 1,
+                date: 1
             }
         }
     ]);
@@ -216,37 +235,11 @@ router.post('/listMessages', async (req, res) => {
                 from: ObjectId(id)
             }
         },
-        // {
-        //     $addFields: {
-        //         roomId: {
-        //             $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
-        //         },
-        //     }
-        // },
-        // {
-        //     $sort: {
-        //         date: 1
-        //     }
-        // },
-        // {
-        //     $group: {
-        //         _id: "$roomId",
-        //         date: {$last: "$date"},
-        //         from: {$last: "$from"}
-        //     }
-        // },
         {
             $sort: {
                 date: -1
             }
         },
-        // {
-        //     $set: {
-        //         date: {
-        //             $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$date", else: -1 }
-        //         }
-        //     }
-        // }
     ]);
 
     // const chats = await Chat.aggregate([
@@ -288,8 +281,10 @@ router.post('/listMessages', async (req, res) => {
     console.log('messages: ', messages);
 
     const preparedMessages = messages.map((m, idx) => {
-        const chat = chats[idx];
-        const isUpdated = chat.date < m.date && chat.from.toString() !== m.from.toString();
+        const chat = m.chat[0];
+        console.log(chat);
+        const isUpdated = m.from.toString() !== id.toString() && chat.date < m.date;
+        // const isUpdated = chat.date < m.date && chat.from.toString() !== m.from.toString();
         // const isUpdated = chat.from.toString() !== id.toString() && chat.date < m.date;
         return {
             name: m.user[0].name,
@@ -353,5 +348,66 @@ router.post('/chat', async (req, res) => {
 //     longpoll.publish('/longpoll', {type: 'timeout'});
 // }, 8000);
 
-module.exports = router;
+router.post('/uploadAvatar', authMiddleware, fileMiddleware.single('avatar'), async (req, res) => {
+    console.log('file is ', req.file);
+    const filename = req.file.filename;
 
+    const user = await User.findOne({_id: req.body.id});
+    await user.updateOne({avatarUrl: filename});
+
+    res.json({avatarUrl: filename});
+});
+
+router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async (req, res) => {
+    const user = await User.findOne({_id: req.body.id});
+    let filename;
+
+    if (req.file) {
+        filename = req.file.filename;
+    }
+
+    const post = new Post({
+        owner: user,
+        text: req.body.text,
+        imageUrl: filename,
+        date: Date.now()
+    });
+    await post.save();
+
+    const {_doc: {owner, ...rest}} = post;
+
+    const preparedPost = {
+        ...rest,
+        time: timeSince(post.date)
+    };
+
+    res.json({post: preparedPost});
+});
+
+router.post('/posts', authMiddleware, async (req, res) => {
+    const user = await User.findOne({_id: req.body.id});
+    const posts = await Post.aggregate([
+        {
+            $match: {
+                owner: user._id
+            }
+        },
+        {
+            $sort: {
+                date: -1
+            }
+        },
+        { $limit : 10 }
+    ]);
+
+    const preparedPosts = posts.map(post => {
+        return {
+            ...post,
+            time: timeSince(new Date(post.date))
+        }
+    });
+
+    res.json({ posts: preparedPosts })
+});
+
+module.exports = router;

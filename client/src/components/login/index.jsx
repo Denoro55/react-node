@@ -3,6 +3,8 @@ import {connect} from 'react-redux';
 import {withApiService} from '../hoc';
 import {actionAuthorize, getUserData} from "../../store/actions";
 
+import socket from "../../socket";
+
 class Login extends React.Component {
     state = {
         form: {
@@ -27,7 +29,8 @@ class Login extends React.Component {
                 const token = res.token;
                 if (token) {
                     actionAuthorize({auth: true, token});
-                    actionGetUserData(token).then(() => {
+                    actionGetUserData(token).then((e) => {
+                        socket.emit('connected', {id: e.payload.id});
                         this.props.history.push('/me');
                     });
                 }
@@ -54,21 +57,23 @@ class Login extends React.Component {
         ) : null;
 
         return (
-            <div className="row">
-                <div className="col-4">
-                    <h3 className="mb-4">Login</h3>
-                    <form onSubmit={this.login}>
-                        <div className="mb-3">
-                            <div className="form-group">
-                                <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" />
+            <div className="container">
+                <div className="row">
+                    <div className="col-4">
+                        <h3 className="mb-4">Login</h3>
+                        <form onSubmit={this.login}>
+                            <div className="mb-3">
+                                <div className="form-group">
+                                    <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" />
+                                </div>
+                                <div className="form-group">
+                                    <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" />
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" />
-                            </div>
-                        </div>
-                        {feedback}
-                        <button type="submit" className="btn btn-primary">Sign in</button>
-                    </form>
+                            {feedback}
+                            <button type="submit" className="btn btn-primary">Sign in</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         )

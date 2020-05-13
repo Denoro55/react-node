@@ -57,7 +57,7 @@ const Messages = (props) => {
         />;
 
     return (
-        <div>
+        <div className="container">
             <h3 className="mb-4">Messages</h3>
             { messagesLoading ? <Spinner/> : (
                 <div className="messages">

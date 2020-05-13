@@ -12,6 +12,23 @@ input.form-control {
 
 .btn-danger {
   background-color: orangered; }
+  .btn-danger:hover {
+    background-color: red; }
+
+.hidden {
+  display: none; }
+
+img {
+  display: block;
+  max-width: 100%; }
+
+textarea {
+  resize: none;
+  display: block; }
+
+.textarea-theme {
+  padding: 10px;
+  border: 1px solid #ddd; }
 
 #toast-container {
   right: inherit !important;

@@ -1,3 +1,5 @@
+@import "assets/styles/var";
+
 input.form-control {
     margin-bottom: 0 !important;
 }
@@ -16,6 +18,29 @@ input.form-control {
 
 .btn-danger {
     background-color: orangered;
+
+    &:hover {
+        background-color: red;
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+textarea {
+    resize: none;
+    display: block;
+}
+
+.textarea-theme {
+    padding: 10px;
+    border: 1px solid $color_gray_light;
 }
 
 // toast

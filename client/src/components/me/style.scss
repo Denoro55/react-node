@@ -1,3 +1,12 @@
+@import "../../assets/styles/var";
+@import "style/post-create";
+@import "style/post-icon";
+@import "style/post-info";
+@import "style/profile";
+@import "style/profile-info";
+@import "style/profile-post";
+@import "style/avatar-form";
+
 .me {
     &__block {
         display: flex;
@@ -32,4 +41,10 @@
 
 .form-control {
     height: auto;
+}
+
+.profile-wall {
+    &__item {
+        margin-bottom: 30px;
+    }
 }

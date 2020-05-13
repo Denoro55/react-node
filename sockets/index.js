@@ -28,6 +28,10 @@ module.exports = function(io) {
             io.to(data.fromId).emit('getMessage', data);
         });
 
+        socket.on('leaveRoom', function(data) {
+            socket.leave(data.id);
+        });
+
         socket.on('disconnect', function() {
             // const socketId = socket.id;
             // const userId = socket.userId;

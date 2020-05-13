@@ -3,7 +3,7 @@ const initialState = {
     messages: []
 };
 
-const createMessage = (name, id, updated) => ({name, id, updated});
+const createMessage = (name, text, id, updated) => ({name, text, id, updated});
 
 const messagesReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -28,12 +28,13 @@ const messagesReducer = (state = initialState, action) => {
             if (sort) {
                 // отсортировать и создать, если нет собеседника в списке
                 let name = message.name;
+                let text = message.text;
 
                 if (index >= 0) {
                     name = updatedMessages[index].name;
                     updatedMessages = updatedMessages.filter(m => m.id !== id);
                 }
-                updatedMessages.unshift(createMessage(name, id, updated));
+                updatedMessages.unshift(createMessage(name, text, id, updated));
             } else {
                 if (index >= 0) {
                     updatedMessages[index].updated = updated;

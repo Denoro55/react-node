@@ -15,16 +15,22 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    messagesRead: [{
-        date: {
-            type: Date,
-            default: Date.now()
-        },
-        to: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
-    }]
-}) ;
+    avatarUrl: {
+        type: String
+    },
+    backgroundUrl: {
+        type: String
+    }
+    // messagesRead: [{
+    //     date: {
+    //         type: Date,
+    //         default: Date.now()
+    //     },
+    //     to: {
+    //         type: Schema.Types.ObjectId,
+    //         ref: 'User'
+    //     }
+    // }]
+});
 
 module.exports = model('User', userSchema);

@@ -4,9 +4,12 @@ import {connect} from 'react-redux'
 import {actionUnauthorize} from "../../store/actions";
 import './style.css'
 
-const Header = ({isAuthenticated, actionUnauthorize}) => {
+import socket from "../../socket";
+
+const Header = ({isAuthenticated, actionUnauthorize, user}) => {
     const logout = (e) => {
         e.preventDefault();
+        socket.emit('leaveRoom', {id: user.id});
         actionUnauthorize();
     };
 
@@ -44,25 +47,27 @@ const Header = ({isAuthenticated, actionUnauthorize}) => {
         <header className="header">
             <nav>
                 <div className="nav-wrapper">
-                    <div className="row">
-                        <div className="col s12">
-                            <Link className="navbar-brand left" to="/">Art's Store</Link>
-                            <ul id="nav-mobile" className="left hide-on-med-and-down">
-                                {
-                                    items.map((link, idx) => {
-                                        if (!isAuthenticated && link.isAuth) {
-                                            return null;
-                                        }
+                    <div className="container">
+                        <div className="row">
+                            <div className="col s12">
+                                <Link className="navbar-brand left" to="/">Art's Store</Link>
+                                <ul id="nav-mobile" className="left hide-on-med-and-down">
+                                    {
+                                        items.map((link, idx) => {
+                                            if (!isAuthenticated && link.isAuth) {
+                                                return null;
+                                            }
 
-                                        return (
-                                            <li key={idx} className="nav-item">
-                                                <NavLink activeClassName='active' className="nav-link" exact={link.exact} to={link.to}>{link.name}</NavLink>
-                                            </li>
-                                        )
-                                    })
-                                }
-                            </ul>
-                            { renderRight() }
+                                            return (
+                                                <li key={idx} className="nav-item">
+                                                    <NavLink activeClassName='active' className="nav-link" exact={link.exact} to={link.to}>{link.name}</NavLink>
+                                                </li>
+                                            )
+                                        })
+                                    }
+                                </ul>
+                                { renderRight() }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -99,7 +104,8 @@ const Header = ({isAuthenticated, actionUnauthorize}) => {
 
 const mapStateToProps = (state) => {
     return {
-        isAuthenticated: state.user.auth
+        isAuthenticated: state.user.auth,
+        user: state.user
     }
 };
 

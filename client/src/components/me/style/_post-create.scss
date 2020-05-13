@@ -1,0 +1,55 @@
+.post-create {
+    position: relative;
+    margin-bottom: 30px;
+    background: #fff;
+    border: 1px solid $color_gray_light;
+
+    &__wrap {
+        position: relative;
+        padding: 20px;
+
+        &:before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 5px;
+            height: 35px;
+            width: 15px;
+            background: #fff;
+        }
+    }
+
+    &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        left: -10px;
+        top: 12px;
+        width: 20px;
+        height: 20px;
+        border: 1px solid $color_gray_light;
+        transform: rotate(45deg);
+        background: #fff;
+    }
+
+    textarea {
+        height: 100px;
+    }
+
+    &__actions {
+        padding-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    &__action {
+        margin-left: 15px;
+    }
+
+    &__icon {
+        position: absolute;
+        left: -75px;
+        top: -4px;
+    }
+}

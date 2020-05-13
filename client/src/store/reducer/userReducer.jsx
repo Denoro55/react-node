@@ -2,7 +2,8 @@ const initialState = {
     name: null,
     auth: false,
     token: null,
-    id: null
+    id: null,
+    avatarUrl: null
 };
 
 const userReducer = (state = initialState, action) => {
@@ -15,12 +16,14 @@ const userReducer = (state = initialState, action) => {
                 ...action.payload
             };
 
-        case 'USER_UNAUTHORIZE':
-            return  {
-                name: null,
-                auth: false,
-                token: null
+        case 'USER_AVATAR_UPDATE':
+            return {
+                ...state,
+                avatarUrl: action.payload
             };
+
+        case 'USER_UNAUTHORIZE':
+            return {...initialState};
 
         default:
             return state;
