@@ -26,10 +26,13 @@
     border: 1px solid #ddd;
     transform: rotate(45deg);
     background: #fff; }
+  .post-create__image {
+    margin-bottom: 15px; }
+  .post-create__input {
+    margin-bottom: 15px; }
   .post-create textarea {
     height: 100px; }
   .post-create__actions {
-    padding-top: 15px;
     display: flex;
     justify-content: flex-end; }
   .post-create__action {
@@ -53,6 +56,8 @@
     background-color: #f18987; }
   .post-icon_green {
     background-color: #84b4af; }
+  .post-icon_remove {
+    background-color: #ff2222; }
 
 .post-info {
   display: flex;
@@ -169,6 +174,8 @@
 .profile-post {
   position: relative;
   border: 1px solid #ddd; }
+  .profile-post:hover .profile-post__remove {
+    opacity: 1; }
   .profile-post:before {
     content: '';
     display: block;
@@ -184,6 +191,16 @@
     position: absolute;
     left: -75px;
     top: -4px; }
+  .profile-post__remove {
+    opacity: 0;
+    transition: all .3s;
+    position: absolute;
+    right: -75px;
+    bottom: 0;
+    top: -4px;
+    padding-left: 25px; }
+    .profile-post__remove .post-icon {
+      cursor: pointer; }
   .profile-post__head {
     position: relative;
     display: flex;
@@ -285,6 +302,9 @@
   display: none; }
 .profile__avatar-form.active .avatar-form__content {
   display: flex; }
+
+.post-likes {
+  cursor: pointer; }
 
 .me__block {
   display: flex; }

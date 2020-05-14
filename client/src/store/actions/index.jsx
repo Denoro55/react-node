@@ -18,10 +18,12 @@ export const actionUpdateUserAvatar = (payload) => ({type: 'USER_AVATAR_UPDATE',
 export const getUserData = (apiService, token) => () => (dispatch) => {
     dispatch(actionGetUserData());
 
-    return apiService.getUserData(token).then(res => {
+    return apiService.getUserData().then(response => {
+        const res = response.body;
         const data = {auth: true, token, name: res.data.name, id: res.data.id, avatarUrl: res.data.avatarUrl};
         return dispatch(actionGetUserDataSuccess(data));
     }).catch(err => {
+        console.log(err);
         dispatch(actionGetUserDataFailure());
     })
 };

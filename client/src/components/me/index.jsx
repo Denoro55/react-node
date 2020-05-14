@@ -1,18 +1,24 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, useContext} from 'react'
 import {connect, useSelector} from 'react-redux'
 import {withApiService} from '../hoc'
 import {actionUpdateUserAvatar} from "../../store/actions"
 import cn from 'classnames'
 import './style.css'
 import {bindActionCreators} from "redux"
+import VariableProvider from '../context/vars'
 
 import PostCreate from "./post-create";
-import ProfileWallList from "./profile-wall-list";
+import ProfileWallList from "../user/profile-wall-list";
 import ProfileInfo from "./profile-info";
+
+import {getUserInfo} from "../../helpers";
 
 const Me = (props) => {
     const {apiService, actionUpdateUserAvatar} = props;
-    const {name, id, token} = props.user;
+    const {user} = props;
+    const {name, id} = user;
+
+    const {path: publicPath} = useContext(VariableProvider);
 
     const avatarFileInput = useRef(null);
 
@@ -26,10 +32,23 @@ const Me = (props) => {
         setPosts([post, ...posts]);
     };
 
+    const updatePost = (id, newItem) => {
+        const index = posts.findIndex((item) => item._id === id);
+        const newItems = [...posts.slice(0, index), newItem, ...posts.slice(index + 1)];
+        setPosts(newItems);
+    };
+
+    const removePostById = (id) => {
+        const newPosts = posts.filter(p => p._id !== id);
+        setPosts(newPosts);
+    };
+
     useEffect(() => {
-        apiService.fetchPosts(id, token).then(res => {
-           setPosts(res.posts);
-        });
+        apiService.fetchPosts(id).then(res => {
+           setPosts(res.body.posts);
+        }).catch(e => {
+            console.log(e);
+        })
     }, []);
 
     const onFileUpload = (e) => {
@@ -62,7 +81,7 @@ const Me = (props) => {
         data.append('avatar', avatarFileInput.current.files[0]);
         data.append('id', id);
 
-        apiService.uploadAvatar(data, token).then(e => {
+        apiService.uploadAvatar(data).then(e => {
             resetAvatarForm();
             actionUpdateUserAvatar(e.avatarUrl)
         })
@@ -73,6 +92,8 @@ const Me = (props) => {
         'active': avatarFormActive
     });
 
+    const {postsCount, imagesCount} = getUserInfo(posts);
+
     return (
         <div className="profile">
             <div className="profile__top">
@@ -81,12 +102,12 @@ const Me = (props) => {
                 </div>
                 <div className="profile__info">
                     <div className="container">
-                        <ProfileInfo />
+                        <ProfileInfo imagesCount={imagesCount} postsCount={postsCount} />
                     </div>
                 </div>
                 <div className="profile__avatar">
                     <div className="container">
-                        <div className="profile__avatar-image" style={{backgroundImage: `url(/public/images/${avatarUrl})`}}>
+                        <div className="profile__avatar-image" style={{backgroundImage: `url(${publicPath}${avatarUrl})`}}>
                             <div className={avatarClasses}>
                                 <form onSubmit={uploadAvatar} className="avatar-form">
                                     <label className="avatar-form__label">
@@ -115,11 +136,6 @@ const Me = (props) => {
             <div className="profile__bottom">
                 <div className="container">
                     <div className="profile__name">{name}</div>
-                    {/*<div className="profile__actions">*/}
-                    {/*    <div className="profile__follow">*/}
-                    {/*        <div className="btn">Follow</div>*/}
-                    {/*    </div>*/}
-                    {/*</div>*/}
                     <div className="profile__wall">
                         <div className="profile__wall-bar">
 
@@ -129,7 +145,7 @@ const Me = (props) => {
                                 <div className="profile-wall__create">
                                     <PostCreate apiService={apiService} user={props.user} addPost={addPost} />
                                 </div>
-                                <ProfileWallList posts={posts} />
+                                <ProfileWallList owner={true} posts={posts} apiService={apiService} user={user} removePostById={removePostById} updatePost={updatePost} />
                             </div>
                         </div>
                     </div>

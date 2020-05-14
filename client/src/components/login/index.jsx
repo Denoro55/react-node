@@ -20,7 +20,9 @@ class Login extends React.Component {
     login = (e) => {
         e.preventDefault();
         const {apiService, actionAuthorize, actionGetUserData} = this.props;
-        apiService.login(this.state.form).then(res => {
+        apiService.login(this.state.form).then(response => {
+            const res = response.body;
+
             if (res.errors) {
                 this.setState({
                     message: {color: 'red', text: res.message}

@@ -1,6 +1,8 @@
 import React from "react";
 
 const ProfileInfo = (props) => {
+    const {postsCount, imagesCount} = props;
+
     return (
         <div className="profile-info">
             <div className="profile-info__list">
@@ -22,7 +24,7 @@ const ProfileInfo = (props) => {
                 </div>
                 <div className="profile-info__item">
                     <div className="profile-info__value">
-                        0
+                        {imagesCount}
                     </div>
                     <div className="profile-info__key">
                         Photos
@@ -30,7 +32,7 @@ const ProfileInfo = (props) => {
                 </div>
                 <div className="profile-info__item">
                     <div className="profile-info__value">
-                        0
+                        {postsCount}
                     </div>
                     <div className="profile-info__key">
                         Posts

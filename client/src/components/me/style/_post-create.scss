@@ -33,12 +33,19 @@
         background: #fff;
     }
 
+    &__image {
+        margin-bottom: 15px;
+    }
+
+    &__input {
+        margin-bottom: 15px;
+    }
+
     textarea {
         height: 100px;
     }
 
     &__actions {
-        padding-top: 15px;
         display: flex;
         justify-content: flex-end;
     }

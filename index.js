@@ -40,7 +40,7 @@ app.use('/api', apiRoutes);
 sockets(io);
 
 async function start() {
-    await mongoose.connect(config.get('mongoUri'), {useNewUrlParser: true});
+    await mongoose.connect(config.get('mongoUri'), {useNewUrlParser: true, useFindAndModify: false});
 
     http.listen(PORT, function () {
         console.log(`Server is listening on port ${PORT}!`);

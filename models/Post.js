@@ -14,6 +14,13 @@ const postSchema = new Schema({
     },
     imageUrl: {
         type: String
+    },
+    likeCount: {
+        type: Number,
+        default: 0
+    },
+    likes: {
+        type: Array
     }
 });
 

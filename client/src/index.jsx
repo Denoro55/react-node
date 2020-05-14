@@ -10,13 +10,14 @@ import './style.css'
 import store from "./store";
 
 import {ApiServiceProvider} from "./components/context/apiService";
+import VariablesProvider from "./components/context/vars";
 import {getUserData} from "./store/actions";
 
 import socket from "./socket";
 
 const apiService = new ApiService();
-
 const token = localStorage.getItem('userData');
+apiService.setToken(token);
 
 // window.M.toast({html: 'I am a toast!'});
 
@@ -38,9 +39,11 @@ function renderDOM() {
         <React.StrictMode>
             <Provider store={store}>
                 <ApiServiceProvider value={apiService}>
-                    <Router>
-                        <App/>
-                    </Router>
+                    <VariablesProvider.Provider value={{path: '/public/images/'}}>
+                        <Router>
+                            <App/>
+                        </Router>
+                    </VariablesProvider.Provider>
                 </ApiServiceProvider>
             </Provider>
         </React.StrictMode>,

@@ -2,6 +2,12 @@
     position: relative;
     border: 1px solid #ddd;
 
+    &:hover {
+        .profile-post__remove {
+            opacity: 1;
+        }
+    }
+
     &:before {
         content: '';
         display: block;
@@ -19,6 +25,20 @@
         position: absolute;
         left: -75px;
         top: -4px;
+    }
+
+    &__remove {
+        opacity: 0;
+        transition: all .3s;
+        position: absolute;
+        right: -75px;
+        bottom: 0;
+        top: -4px;
+        padding-left: 25px;
+
+        .post-icon {
+            cursor: pointer;
+        }
     }
 
     &__head {

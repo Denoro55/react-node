@@ -6,7 +6,7 @@ export const fetchChat = (apiService) => (id, receiverId) => (dispatch) => {
     dispatch(fetchChatMessagesRequest());
 
     return apiService.getChatMessages(id, receiverId).then(res => {
-        dispatch(fetchChatSuccess(res));
+        dispatch(fetchChatSuccess(res.body));
         dispatch(updateMessageInList({id: receiverId, updated: false, sort: false}));
     })
 };
@@ -27,13 +27,4 @@ export const actionSendMessage = (apiService) => (companion, user, message, date
     };
 
     return apiService.getRequest('sendMessage', params);
-
-    // dispatch(addChatMessage(message));
-
-    // client messages list
-    // const clientMessage = {
-    //     ...message,
-    //     name: companion.name
-    // };
-    // dispatch(updateMessageInList({id: receiverId, updated: false, message: clientMessage, sort: true}));
 };

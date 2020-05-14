@@ -5,7 +5,7 @@ export const actionFetchMessages = (apiService) => (id) => (dispatch) => {
     dispatch(fetchMessagesRequest());
 
     apiService.getListMessages(id).then(res => {
-        dispatch(fetchMessagesSuccess(res.messages));
+        dispatch(fetchMessagesSuccess(res.body.messages));
     })
 };
 

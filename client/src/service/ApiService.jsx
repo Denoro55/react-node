@@ -2,13 +2,18 @@ import UnauthorizedError from "../errors/UnauthorizedError";
 
 class ApiService {
     URL = '/api/';
+    token = null;
 
     getRequest(url, params = {}) {
         return new Promise((resolve, reject) => {
-            fetch(`${this.URL}${url}`, params).then(res => {
-                if (res.status === 401) reject(new UnauthorizedError());
-                return res.json();
-            }).then(res => resolve(res));
+            // fetch(`${this.URL}${url}`, params).then(res => {
+            //     if (res.status === 401) reject(new UnauthorizedError());
+            //     return res.json();
+            // }).then(res => resolve(res));
+
+            fetch(`${this.URL}${url}`, params)
+                .then(r =>  r.json().then(data => ({status: r.status, body: data})))
+                .then(res => resolve(res));
         });
     }
 
@@ -24,6 +29,7 @@ class ApiService {
 
     register(data) {
         console.log(JSON.stringify(data));
+
         return this.getRequest('register', {
             method: 'POST',
             headers: {
@@ -33,43 +39,64 @@ class ApiService {
         });
     }
 
-    uploadAvatar(formData, token) {
+    uploadAvatar(formData) {
+        const token = this.getToken();
+
         return this.getRequest('uploadAvatar', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': token
             },
             body: formData
         });
     }
 
-    createPost(formData, token) {
+    createPost(formData) {
+        const token = this.getToken();
+
         return this.getRequest('createPost', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': token
             },
             body: formData
         });
     }
 
-    fetchPosts(id, token) {
+    fetchPosts(id) {
+        const token = this.getToken();
+
         return this.getRequest('posts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': this.getToken()
             },
-            body: JSON.stringify({id, token})
+            body: JSON.stringify({id})
         });
     }
 
-    getUserData = (token) => {
+    removePost(id) {
+        const token = this.getToken();
+
+        return this.getRequest('posts', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({id})
+        });
+    }
+
+    getUserData = () => {
+        const token = this.getToken();
+
         return this.getRequest('userData', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': token
             }
         });
     };
@@ -102,6 +129,40 @@ class ApiService {
             },
             body: JSON.stringify({id, receiverId, date})
         });
+    }
+
+    getUserInfo(id, clientId) {
+        const token = this.getToken();
+
+        return this.getRequest('userInfo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({id, clientId})
+        });
+    }
+
+    likePost(userId, postId, isLiked) {
+        const token = this.getToken();
+
+        return this.getRequest('postLike', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({userId, postId, like: isLiked})
+        });
+    }
+
+    setToken(token) {
+        this.token = token;
+    }
+
+    getToken() {
+        return this.token;
     }
 }
 

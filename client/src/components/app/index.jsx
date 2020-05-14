@@ -1,5 +1,5 @@
 import React from 'react';
-import {Route, Switch} from "react-router-dom";
+import {Route, Switch, Redirect} from "react-router-dom";
 
 import Cart from "../cart";
 import Header from "../header";
@@ -10,6 +10,8 @@ import Login from "../login";
 import Register from '../register';
 import Messages from '../messages';
 import Me from '../me';
+import User from "../user";
+
 import {withApiService} from "../hoc";
 import {connect} from "react-redux";
 import {sortMessagesList, updateMessageInList} from "../../store/actions/messageActions";
@@ -20,7 +22,12 @@ import socket from "../../socket";
 
 class App extends React.Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
-        console.log(prevProps, this.props);
+        const {apiService} = this.props;
+        const token = this.props.user.token;
+
+        if (prevProps.user.token !== token) {
+            apiService.setToken(token);
+        }
     }
 
     getUser() {
@@ -30,6 +37,10 @@ class App extends React.Component {
 
     componentDidMount() {
         const {apiService, updateMessageInList, addChatMessage} = this.props;
+
+        fetch('/api/test').then(res => {
+            console.log(res)
+        });
 
         // messages from me and others
         socket.on('getMessage', (data) => {
@@ -111,6 +122,8 @@ class App extends React.Component {
                         <Route path="/test" render={() => {
                             return <h2>Test page</h2>
                         }} />
+                        <PrivateRoute path="/user/:id" component={User}/>
+                        <Redirect to="/" />
                     </Switch>
                 </div>
             </div>

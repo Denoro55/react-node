@@ -19,7 +19,7 @@ input.form-control {
 .btn-danger {
     background-color: orangered;
 
-    &:hover {
+    &:hover, &:active, &:focus {
         background-color: red;
     }
 }
