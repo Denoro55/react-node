@@ -7,7 +7,7 @@ const withoutOwner = (Wrapped) => {
         const user = useSelector(state => state.user);
         const pageId = props.computedMatch.params.id;
 
-        if (user.id.toString() === pageId.toString()) {
+        if (pageId && user.id.toString() === pageId.toString()) {
             return <Redirect to="/me" />
         }
 

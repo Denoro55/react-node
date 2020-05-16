@@ -1,0 +1,75 @@
+@import '../../../assets/styles/var';
+
+.post-comment {
+    border-top: 1px solid $color_gray_light;
+
+    &__list {
+        padding: 20px;
+        padding-bottom: 0;
+    }
+
+    &__item {
+        display: flex;
+        border-bottom: 1px solid $color_gray_light;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+
+        &:last-child {
+            margin-bottom: 0;
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+    }
+
+    &__avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: $color_gray_light;
+        margin-right: 15px;
+        flex-shrink: 0;
+        background-size: cover;
+        background-position: center;
+    }
+
+    &__head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 7px;
+    }
+
+    &__content {
+        flex: 1 1 auto;
+    }
+
+    &__date {
+        color: $color_gray;
+        font-size: 14px;
+    }
+
+    &__create {
+        padding: 20px;
+    }
+
+    &__body {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    &__text {
+        flex: 1 1 auto;
+    }
+
+    &__likes {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 80px;
+        flex-shrink: 0;
+    }
+}
+
+.comment-like {
+    cursor: pointer;
+}
+

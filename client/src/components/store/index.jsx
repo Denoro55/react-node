@@ -1,15 +1,11 @@
 import React from 'react'
+import {connect} from 'react-redux'
 
-class Store extends React.Component {
-    componentDidMount() {
+const Store = (props) => {
 
-    }
+    return (
+        <h3>Store page</h3>
+    )
+};
 
-    render() {
-        return (
-            <h3>Store page</h3>
-        )
-    }
-}
-
-export default Store;
+export default connect()(Store);

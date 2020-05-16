@@ -3,7 +3,7 @@ import VariableProvider from '../context/vars';
 import cn from 'classnames'
 
 const PostCreate = (props) => {
-    const {apiService, user, addPost} = props;
+    const {apiService, user, addPost, wallId} = props;
 
     const publicPath = useContext(VariableProvider);
 
@@ -60,12 +60,13 @@ const PostCreate = (props) => {
             const data = new FormData();
             data.append('text', postText);
             data.append('id', user.id);
+            data.append('wallId', wallId);
             data.append('image', file);
 
             apiService.createPost(data).then(res => {
                 console.log('post created ', e);
                 resetForm();
-                addPost(res.post);
+                addPost(res.body.post);
             })
         }
     };

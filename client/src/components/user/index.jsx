@@ -1,40 +1,155 @@
-import React, {useContext, useEffect, useState} from "react";
-import ProfileInfo from "../me/profile-info";
+import React, {useEffect, useState, useRef, useContext} from 'react'
+import {connect} from 'react-redux'
 import {withApiService, withoutOwner} from '../hoc';
+import {actionUpdateUserAvatar} from "../../store/actions"
+import {bindActionCreators} from "redux"
+import VariableProvider from '../context/vars'
+
+import PostCreate from "./post-create";
+import ProfileWallList from "./profile-wall-list";
+import ProfileInfo from "./profile-info";
 
 import {getUserInfo} from "../../helpers";
-import VariableProvider from "../context/vars";
 
-import ProfileWallList from "./profile-wall-list";
-import {connect} from "react-redux";
+import cn from 'classnames'
+import './style.css'
 
 const User = (props) => {
-    const userId = props.computedMatch.params.id;
-    const {user, apiService} = props;
+    const {apiService, actionUpdateUserAvatar, user, isUserPage, userPageId} = props;
+    const {id} = user;
+    const isOwner = !isUserPage;
 
-    const [userData, setUserData] = useState({
-        posts: []
-    });
     const {path: publicPath} = useContext(VariableProvider);
 
-    useEffect(() => {
-        apiService.getUserInfo(userId, user.id).then(res => {
-            setUserData(res.body.data);
-        }).catch(e => {
+    const avatarFileInput = useRef(null);
 
-        })
-    }, []);
+    const [userName, setUserName] = useState('');
+    const [userId, setUserId] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(null);
+    const [avatarFormActive, setAvatarFormStatus] = useState(false);
+    const [avatarPreviewImage, setAvatarPreviewImage] = useState(null);
+    const [posts, setPosts] = useState([]);
+    const [postsUI, setPostsUI] = useState([]);
 
-    const updatePost = (id, newItem) => {
-        const index = posts.findIndex((item) => item._id === id);
-        const newItems = [...posts.slice(0, index), newItem, ...posts.slice(index + 1)];
-        setUserData((state) => ({
-            ...state,
-            posts: newItems
-        }));
+    const getPostsInterface = (posts) => {
+        return posts.reduce(function(acc, p) {
+            return {...acc, [p._id]: {
+                    commentsOpened: false
+                }}
+        }, {});
     };
 
-    const {name, posts, avatarUrl} = userData;
+    useEffect(() => {
+        if (isUserPage) {
+            // other pages
+            apiService.getUserInfo(userPageId, id).then(res => {
+                const data = res.body.data;
+
+                setAvatarUrl(data.avatarUrl);
+                setUserName(data.name);
+                setUserId(data.id);
+
+                setPostsUI(getPostsInterface(data.posts));
+                setPosts(data.posts);
+            }).catch(e => {
+                console.log(e);
+            })
+        } else {
+            // me
+            setAvatarUrl(user.avatarUrl);
+            setUserName(user.name);
+            setUserId(user.id);
+
+            apiService.fetchPosts(id).then(res => {
+                setPostsUI(getPostsInterface(res.body.posts));
+                setPosts(res.body.posts);
+            }).catch(e => {
+                console.log(e);
+            })
+        }
+    }, []);
+
+    const toggleComments = (postId) => {
+        const currentState = postsUI[postId].commentsOpened;
+        const newState = {...postsUI, [postId]: {
+                commentsOpened: !currentState
+        }};
+        setPostsUI(newState);
+    };
+
+    const updatePostComments = (postId, comments) => {
+        const index = posts.findIndex((item) => item._id === postId);
+        const newItem = {
+            ...posts[index],
+            comments
+        };
+        const newItems = [...posts.slice(0, index), newItem, ...posts.slice(index + 1)];
+        setPosts(newItems);
+    };
+
+    const addPost = (post) => {
+        const postsInterface = {...postsUI, [post._id]: {commentsOpened: false}};
+        setPostsUI(postsInterface);
+        setPosts([post, ...posts]);
+    };
+
+    const updatePostLikes = (post) => {
+        const {_id, ...newParams} = post;
+        const index = posts.findIndex((item) => item._id === _id);
+        const newItem = {
+            ...posts[index],
+            ...newParams
+        };
+        const newItems = [...posts.slice(0, index), newItem, ...posts.slice(index + 1)];
+        setPosts(newItems);
+    };
+
+    const removePostById = (id) => {
+        const newPosts = posts.filter(p => p._id !== id);
+        setPosts(newPosts);
+    };
+
+    const onFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAvatarFormStatus(true);
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onloadend = function () {
+                const previewImage = reader.result;
+                setAvatarPreviewImage(previewImage);
+            };
+
+        } else {
+            setAvatarFormStatus(false);
+        }
+    };
+
+    const resetAvatarForm = () => {
+        setAvatarFormStatus(false);
+        avatarFileInput.current.value = null;
+    };
+
+    const uploadAvatar = (e) => {
+        e.preventDefault();
+
+        const data = new FormData();
+        data.append('avatar', avatarFileInput.current.files[0]);
+        data.append('id', id);
+
+        apiService.uploadAvatar(data).then(e => {
+            resetAvatarForm();
+            actionUpdateUserAvatar(e.avatarUrl)
+        })
+    };
+
+    const avatarClasses = cn({
+        'profile__avatar-form': true,
+        'active': avatarFormActive
+    });
+
     const {postsCount, imagesCount} = getUserInfo(posts);
 
     return (
@@ -51,26 +166,67 @@ const User = (props) => {
                 <div className="profile__avatar">
                     <div className="container">
                         <div className="profile__avatar-image" style={{backgroundImage: `url(${publicPath}${avatarUrl})`}}>
+                            {
+                                isOwner ? (
+                                    <div className={avatarClasses}>
+                                        <form onSubmit={uploadAvatar} className="avatar-form">
+                                            <label className="avatar-form__label">
+                                                Upload a new photo
+                                                <input ref={avatarFileInput} onChange={onFileUpload} type="file"/>
+                                            </label>
+                                            <div className="avatar-form__content">
+                                                <div className="avatar-form__preview" style={{backgroundImage: `url(${avatarPreviewImage})`}}>
+
+                                                </div>
+                                                <div className="avatar-form__actions">
+                                                    <div className="avatar-form__apply">
+                                                        <button type="submit" className="btn">Apply</button>
+                                                    </div>
+                                                    <div className="avatar-form__cancel">
+                                                        <div onClick={resetAvatarForm} className="btn btn-danger">Cancel</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                ) : null
+                            }
                         </div>
                     </div>
                 </div>
             </div>
-
             <div className="profile__bottom">
                 <div className="container">
-                    <div className="profile__name">{name}</div>
-                    <div className="profile__actions">
-                        <div className="profile__follow">
-                            <div className="btn">Follow</div>
-                        </div>
-                    </div>
+                    <div className="profile__name">{userName}</div>
+                    {
+                        !isOwner ? (
+                            <div className="profile__actions">
+                                <div className="profile__follow">
+                                    <div className="btn">Follow</div>
+                                </div>
+                            </div>
+                        ) : null
+                    }
                     <div className="profile__wall">
                         <div className="profile__wall-bar">
 
                         </div>
                         <div className="profile__wall-left">
                             <div className="profile-wall">
-                                <ProfileWallList posts={posts} apiService={apiService} user={user} updatePost={updatePost} />
+                                <div className="profile-wall__create">
+                                    <PostCreate apiService={apiService} user={props.user} wallId={userId} addPost={addPost} />
+                                </div>
+                                <ProfileWallList
+                                    isOwner={isOwner}
+                                    posts={posts}
+                                    postsUI={postsUI}
+                                    apiService={apiService}
+                                    user={user}
+                                    removePostById={removePostById}
+                                    updatePostLikes={updatePostLikes}
+                                    updatePostComments={updatePostComments}
+                                    toggleComments={toggleComments}
+                                />
                             </div>
                         </div>
                     </div>
@@ -86,4 +242,10 @@ const mapStateToProps = (state) => {
     }
 };
 
-export default withoutOwner(withApiService(connect(mapStateToProps)(User)))
+const mapDispatchToProps = (dispatch) => {
+    return bindActionCreators({
+        actionUpdateUserAvatar
+    }, dispatch)
+};
+
+export default withoutOwner(withApiService(connect(mapStateToProps, mapDispatchToProps)(User)))

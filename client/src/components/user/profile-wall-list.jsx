@@ -2,8 +2,19 @@ import React, {useContext} from "react";
 import VariableProvider from '../context/vars'
 
 const ProfileWallList = (props) => {
-    const {posts, owner = false, user, apiService, removePostById, updatePost} = props;
+    const {posts, postsUI, isOwner = false, user, apiService, removePostById, toggleComments, updatePostLikes, updatePostComments} = props;
     const {path: publicPath} = useContext(VariableProvider);
+
+    const createComment = (e, postId) => {
+        e.preventDefault();
+        const text = e.target.elements[0].value;
+        if (text) {
+            apiService.createComment(user.id, postId, text).then((res) => {
+                updatePostComments(postId, res.body.comments);
+            });
+            e.target.reset();
+        }
+    };
 
     const removePost = (id) => {
         apiService.removePost(id).then((res) => {
@@ -13,13 +24,9 @@ const ProfileWallList = (props) => {
 
     const likePost = (postId, isLiked) => {
         apiService.likePost(user.id, postId, isLiked).then(res => {
-            console.log(res);
-            if (!res.body.ok) {
-
-            } else {
-                const {post} = res.body;
-                console.log('like post', post);
-                updatePost(postId, post);
+            if (res.body.ok) {
+                const { post } = res.body;
+                updatePostLikes(post);
             }
         })
     };
@@ -44,17 +51,19 @@ const ProfileWallList = (props) => {
         return (
             <div className="post-info">
                 <div className="post-info__comments">
-                    <i className="fa fa-comment-o" aria-hidden="true"/> 0 Comments
+                    <div onClick={() => toggleComments(post._id)} className="post-comments-button">
+                        <i className="fa fa-comment-o" aria-hidden="true"/> {post.comments.length} Comments
+                    </div>
                 </div>
                 <div className="post-info__likes">
-                    <div onClick={() => likePost(post._id, post.isLiked)} className="post-likes">
+                    <div onClick={() => likePost(post._id, post.isLiked)} className="post-likes-button">
                         {
                             !post.isLiked ? (
                                 <i className="fa fa-heart-o" aria-hidden="true"/>
                             ) : (
                                 <i style={{color: 'red'}} className="fa fa-heart" aria-hidden="true"/>
                             )
-                        } {post.likeCount} Likes
+                        } {post.likesCount} Likes
                     </div>
                 </div>
             </div>
@@ -73,31 +82,94 @@ const ProfileWallList = (props) => {
     };
 
     const renderPostContent = (post, isPhotoPost) => {
+        let topHtml = null;
+
         if (isPhotoPost) {
-            return renderPostImage(post)
+            topHtml = renderPostImage(post);
+        } else {
+            topHtml = (
+                <>
+                    {
+                        post.imageUrl ? (
+                            renderPostImage(post, false)
+                        ) : null
+                    }
+                    <div className="profile-post__body">
+                        <div className="profile-post__content">
+                            { post.text }
+                        </div>
+                    </div>
+                    <div className="profile-post__info">
+                        { renderPostInfo(post) }
+                    </div>
+                </>
+            )
         }
 
         return (
             <>
+                { topHtml }
                 {
-                    post.imageUrl ? (
-                        renderPostImage(post, false)
+                    postsUI[post._id].commentsOpened ? (
+                        <div className="profile-post__comments">
+                            <div className="post-comment">
+                                {
+                                    post.comments.length ? (
+                                        <div className="post-comment__list">
+                                            { post.comments.map(c => {
+                                                return (
+                                                    <div key={c._id} className="post-comment__item">
+                                                        <div className="post-comment__avatar" style={{backgroundImage: `url(${publicPath}${c.user.avatarUrl})`}}>
+
+                                                        </div>
+                                                        <div className="post-comment__content">
+                                                            <div className="post-comment__head">
+                                                                <div className="post-comment__name">
+                                                                    <strong>{c.user.name}</strong>
+                                                                </div>
+                                                                <div className="post-comment__date">
+                                                                    {c.time}
+                                                                </div>
+                                                            </div>
+                                                            <div className="post-comment__body">
+                                                                <div className="post-comment__text">
+                                                                    {c.text}
+                                                                </div>
+                                                                <div className="post-comment__likes">
+                                                                    <div className="comment-like">
+                                                                        <i className="fa fa-heart-o" aria-hidden="true"/> 12
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }) }
+                                        </div>
+                                    ) : null
+                                }
+                                <div className="post-comment__create">
+                                    <form onSubmit={(e) => createComment(e, post._id)} className="comment-create">
+                                        <div className="comment-create__input">
+                                            <textarea className="textarea-theme" cols="30" rows="10" />
+                                        </div>
+                                        <div className="comment-create__actions">
+                                            <div className="comment-create__action">
+                                                <button className="btn">Comment</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     ) : null
                 }
-                <div className="profile-post__body">
-                    <div className="profile-post__content">
-                        { post.text }
-                    </div>
-                </div>
-                <div className="profile-post__info">
-                    { renderPostInfo(post) }
-                </div>
             </>
         )
     };
 
     const renderPosts = () => {
-        return posts.map(post => {
+        return posts.map((post) => {
             const isPhotoPost = post.imageUrl && !post.text;
             const typeText = isPhotoPost ? 'a photo' : 'an article';
 
@@ -108,7 +180,7 @@ const ProfileWallList = (props) => {
                             { renderPostIcon(isPhotoPost) }
                         </div>
                         {
-                            owner ? (
+                            isOwner ? (
                                 <div className="profile-post__remove">
                                     <div onClick={() => removePost(post._id)} className="post-icon post-icon_remove">
                                         <i className="fa fa-times" aria-hidden="true"/>

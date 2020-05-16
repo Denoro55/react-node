@@ -52,20 +52,27 @@ class ApiService {
     }
 
     createPost(formData) {
-        const token = this.getToken();
-
         return this.getRequest('createPost', {
             method: 'POST',
             headers: {
-                'Authorization': token
+                'Authorization': this.getToken()
             },
             body: formData
         });
     }
 
-    fetchPosts(id) {
-        const token = this.getToken();
+    createComment(userId, postId, text) {
+        return this.getRequest('postComment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({userId, postId, text})
+        });
+    }
 
+    fetchPosts(id) {
         return this.getRequest('posts', {
             method: 'POST',
             headers: {
@@ -77,13 +84,11 @@ class ApiService {
     }
 
     removePost(id) {
-        const token = this.getToken();
-
         return this.getRequest('posts', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token
+                'Authorization': this.getToken()
             },
             body: JSON.stringify({id})
         });

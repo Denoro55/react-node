@@ -67,6 +67,9 @@
   .post-info i {
     margin-right: 5px; }
 
+.post-comments-button, .post-likes-button {
+  cursor: pointer; }
+
 .profile__top {
   position: relative;
   height: 300px; }
@@ -119,7 +122,8 @@
   padding-left: 260px;
   padding-top: 20px;
   font-size: 32px;
-  font-weight: 500; }
+  font-weight: 500;
+  min-height: 68px; }
 .profile__actions {
   padding-top: 30px; }
 .profile__wall {
@@ -303,8 +307,59 @@
 .profile__avatar-form.active .avatar-form__content {
   display: flex; }
 
-.post-likes {
+.post-comment {
+  border-top: 1px solid #ddd; }
+  .post-comment__list {
+    padding: 20px;
+    padding-bottom: 0; }
+  .post-comment__item {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+    margin-bottom: 15px; }
+    .post-comment__item:last-child {
+      margin-bottom: 0;
+      border-bottom: 0;
+      padding-bottom: 0; }
+  .post-comment__avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #ddd;
+    margin-right: 15px;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center; }
+  .post-comment__head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 7px; }
+  .post-comment__content {
+    flex: 1 1 auto; }
+  .post-comment__date {
+    color: #848484;
+    font-size: 14px; }
+  .post-comment__create {
+    padding: 20px; }
+  .post-comment__body {
+    display: flex;
+    align-items: flex-end; }
+  .post-comment__text {
+    flex: 1 1 auto; }
+  .post-comment__likes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 80px;
+    flex-shrink: 0; }
+
+.comment-like {
   cursor: pointer; }
+
+.comment-create__input {
+  margin-bottom: 15px; }
+.comment-create textarea {
+  height: 70px; }
 
 .me__block {
   display: flex; }
