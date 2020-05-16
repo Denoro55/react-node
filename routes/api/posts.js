@@ -8,9 +8,12 @@ const Comment = require('../../models/Comment');
 const User = require('../../models/User');
 const ObjectId = mongoose.Types.ObjectId;
 
+const {postsAggregations} = require('../../utils/aggregations');
+
 const fileMiddleware = require('../../middleware/file');
 
 const timeSince = require('../../utils/timeSince');
+const prepareComments = require('../../utils/prepareComments');
 
 router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async (req, res) => {
     const {id, wallId, text} = req.body;
@@ -46,92 +49,13 @@ router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async
 
 router.post('/posts', authMiddleware, async (req, res) => {
     const userId = req.body.id;
-    const posts = await Post.aggregate([
-        {
-            $match: {
-                wallOwner: ObjectId(userId)
-            }
-        },
-        {
-            $sort: {
-                date: -1
-            }
-        },
-        { $limit : 10 },
-        {
-            $lookup: {
-                from: "users",
-                localField: "owner",
-                foreignField: "_id",
-                as: "user"
-            }
-        },
-        { $lookup: {
-            "from": "comments",
-            "localField": "comments",
-            "foreignField": "_id",
-            "as": "comments"
-        }},
-        { $unwind: { path: "$comments", preserveNullAndEmptyArrays: true } },
-        { $lookup: {
-            "from": "users",
-            "localField": "comments.userId",
-            "foreignField": "_id",
-            "as": "commentUser"
-        }},
-        {
-            $group: {
-                _id: "$_id",
-                date: { $last: "$date" },
-                comments: {
-                    $push: {
-                        $cond: { if: { $ne: [ "$commentUser", [] ] },
-                            then: {
-                                user: "$commentUser",
-                                body: '$comments'
-                            },
-                            else: "$$REMOVE" }
-                    }
-                },
-                commentsCount: { $last: "$commentsCount" },
-                likesCount: { $last: "$likesCount" },
-                likes: { $last: "$likes" },
-                imageUrl: { $last: "$imageUrl" },
-                owner: { $last: "$owner" },
-                text: { $last: "$text" },
-                time: { $last: "$time" },
-                user: { $last: "$user" },
-            }
-        },
-        {
-            $sort: {
-                date: -1
-            }
-        },
-        {
-            $addFields: {
-                isLiked: { $in: [ ObjectId(userId), '$likes' ] }
-            }
-        },
-        { $project: { likes: 0 } }
-    ]);
 
-    console.log(posts);
+    const posts = await Post.aggregate(postsAggregations(userId));
 
     const preparedPosts = posts.map(post => {
-        const comments = post.comments.map(c => {
-            const {name, avatarUrl} = c.user[0];
-
-            return {
-                ...c.body,
-                time: timeSince(new Date(c.body.date)),
-                user: { name, avatarUrl }
-            }
-        });
-
         return {
             ...post,
-            comments,
+            comments: prepareComments(post.comments, (c) => c.body),
             user: {
                 name: post.user[0].name
             },
@@ -179,14 +103,6 @@ router.post('/postLike', authMiddleware, async (req, res) => {
                 likesCount: post._doc.likes.length
             };
 
-            // const data = {
-            //     ...post._doc,
-            //     isLiked: true,
-            //     user: {
-            //         name: post.owner.name
-            //     }
-            // };
-
             res.json({ok: true, post: data})
         })
     } else {
@@ -216,15 +132,69 @@ router.post('/postLike', authMiddleware, async (req, res) => {
                 likesCount: post._doc.likes.length
             };
 
-            // const data = {
-            //     ...post._doc,
-            //     isLiked: false,
-            //     user: {
-            //         name: post.owner.name
-            //     }
-            // };
-
             return res.json({ok: true, post: data})
+        })
+    }
+});
+
+router.post('/likeComment', authMiddleware, async (req, res) => {
+    const {userId, commentId, like} = req.body;
+
+    if (!like) {
+        // like
+        await Comment.findOneAndUpdate(
+            {
+                "_id": ObjectId(commentId),
+                "likes": { "$ne": ObjectId(userId) }
+            },
+            {
+                // "$inc": { "likesCount": 1 },
+                "$push": { "likes": ObjectId(userId) }
+            },
+            {new: true}
+        )
+        .exec(function(err, comment) {
+            if (err) throw err;
+
+            if (!comment) {
+                return res.status(429).json({ok: false});
+            }
+
+            const response = {
+                _id: comment._id,
+                likesCount: comment.likes.length,
+                isLiked: true
+            };
+
+            return res.json({ok: true, comment: response})
+        })
+    } else {
+        // dislike
+        await Comment.findOneAndUpdate(
+            {
+                "_id": ObjectId(commentId),
+                "likes": ObjectId(userId)
+            },
+            {
+                // "$inc": { "likesCount": -1 },
+                "$pull": { "likes": ObjectId(userId) }
+            },
+            {new: true}
+        )
+        .exec(function(err, comment) {
+            if (err) throw err;
+
+            if (!comment) {
+                return res.status(429).json({ok: false});
+            }
+
+            const response = {
+                _id: comment._id,
+                likesCount: comment.likes.length,
+                isLiked: false
+            };
+
+            return res.json({ok: true, comment: response})
         })
     }
 });
@@ -266,17 +236,24 @@ router.post('/postComment', authMiddleware, async (req, res) => {
                 "foreignField": "_id",
                 "as": "user"
             }},
+            {
+                $addFields: {
+                    isLiked: { $in: [ ObjectId(userId), '$likes' ] }
+                }
+            },
         ]);
 
-        const preparedComments = comments.map(c => {
-            const {name, avatarUrl} = c.user[0];
+        const preparedComments = prepareComments(comments, (c) => c);
 
-            return {
-                ...c,
-                time: timeSince(new Date(c.date)),
-                user: { name, avatarUrl }
-            }
-        });
+        // const preparedComments = comments.map(c => {
+        //     const {name, avatarUrl} = c.user[0];
+        //
+        //     return {
+        //         ...c,
+        //         time: timeSince(new Date(c.date)),
+        //         user: { name, avatarUrl }
+        //     }
+        // });
 
         res.json({ok: true, comments: preparedComments})
     });

@@ -162,6 +162,17 @@ class ApiService {
         });
     }
 
+    likeComment(userId, commentId, isLiked) {
+        return this.getRequest('likeComment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({userId, commentId, like: isLiked})
+        });
+    }
+
     setToken(token) {
         this.token = token;
     }

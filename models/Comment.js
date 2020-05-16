@@ -16,10 +16,6 @@ const commentSchema = new Schema({
     text: {
         type: String
     },
-    likeCount: {
-        type: Number,
-        default: 0
-    },
     likes: {
         type: Array
     }

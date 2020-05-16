@@ -2,7 +2,7 @@ import React, {useContext} from "react";
 import VariableProvider from '../context/vars'
 
 const ProfileWallList = (props) => {
-    const {posts, postsUI, isOwner = false, user, apiService, removePostById, toggleComments, updatePostLikes, updatePostComments} = props;
+    const {posts, postsUI, isOwner = false, user, apiService, removePostById, toggleComments, updatePostLikes, updatePostComments, updateCommentLikes} = props;
     const {path: publicPath} = useContext(VariableProvider);
 
     const createComment = (e, postId) => {
@@ -27,6 +27,15 @@ const ProfileWallList = (props) => {
             if (res.body.ok) {
                 const { post } = res.body;
                 updatePostLikes(post);
+            }
+        })
+    };
+
+    const likeComment = (commentId, isLiked, postId) => {
+        apiService.likeComment(user.id, commentId, isLiked).then(res => {
+            if (res.body.ok) {
+                const { comment } = res.body;
+                updateCommentLikes(postId, comment);
             }
         })
     };
@@ -81,6 +90,47 @@ const ProfileWallList = (props) => {
         )
     };
 
+    const renderComment = (c, post) => {
+        return (
+            <div className="comment">
+                <div className="comment__avatar" style={{backgroundImage: `url(${publicPath}${c.user.avatarUrl})`}}>
+
+                </div>
+                <div className="comment__content">
+                    <div className="comment__head">
+                        <div className="comment__name">
+                            <strong>{c.user.name}</strong>
+                        </div>
+                        <div className="comment__date">
+                            {c.time}
+                        </div>
+                    </div>
+                    <div className="comment__body">
+                        <div className="comment__text">
+                            {c.text}
+                        </div>
+                        <div className="comment__likes">
+                            <div onClick={() => likeComment(c._id, c.isLiked, post._id)} className="comment-like">
+                                {
+                                    c.isLiked ? (
+                                        <>
+                                            <i style={{color: 'red'}} className="fa fa-heart" aria-hidden="true"/>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fa fa-heart-o" aria-hidden="true"/>
+                                        </>
+                                    )
+                                }
+                                &nbsp;{c.likesCount > 0 ? c.likesCount : null}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    };
+
     const renderPostContent = (post, isPhotoPost) => {
         let topHtml = null;
 
@@ -119,29 +169,7 @@ const ProfileWallList = (props) => {
                                             { post.comments.map(c => {
                                                 return (
                                                     <div key={c._id} className="post-comment__item">
-                                                        <div className="post-comment__avatar" style={{backgroundImage: `url(${publicPath}${c.user.avatarUrl})`}}>
-
-                                                        </div>
-                                                        <div className="post-comment__content">
-                                                            <div className="post-comment__head">
-                                                                <div className="post-comment__name">
-                                                                    <strong>{c.user.name}</strong>
-                                                                </div>
-                                                                <div className="post-comment__date">
-                                                                    {c.time}
-                                                                </div>
-                                                            </div>
-                                                            <div className="post-comment__body">
-                                                                <div className="post-comment__text">
-                                                                    {c.text}
-                                                                </div>
-                                                                <div className="post-comment__likes">
-                                                                    <div className="comment-like">
-                                                                        <i className="fa fa-heart-o" aria-hidden="true"/> 12
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        { renderComment(c, post) }
                                                     </div>
                                                 )
                                             }) }

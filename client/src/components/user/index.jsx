@@ -78,13 +78,15 @@ const User = (props) => {
     };
 
     const updatePostComments = (postId, comments) => {
-        const index = posts.findIndex((item) => item._id === postId);
-        const newItem = {
-            ...posts[index],
-            comments
-        };
-        const newItems = [...posts.slice(0, index), newItem, ...posts.slice(index + 1)];
-        setPosts(newItems);
+        setPosts((state) => {
+            const index = state.findIndex((item) => item._id === postId);
+            const newItem = {
+                ...state[index],
+                comments
+            };
+
+            return [...state.slice(0, index), newItem, ...state.slice(index + 1)];
+        });
     };
 
     const addPost = (post) => {
@@ -94,14 +96,36 @@ const User = (props) => {
     };
 
     const updatePostLikes = (post) => {
-        const {_id, ...newParams} = post;
-        const index = posts.findIndex((item) => item._id === _id);
-        const newItem = {
-            ...posts[index],
-            ...newParams
-        };
-        const newItems = [...posts.slice(0, index), newItem, ...posts.slice(index + 1)];
-        setPosts(newItems);
+        setPosts((state) => {
+            const {_id, ...newParams} = post;
+            const index = state.findIndex((item) => item._id === _id);
+            const newItem = {
+                ...state[index],
+                ...newParams
+            };
+
+            return [...state.slice(0, index), newItem, ...state.slice(index + 1)];
+        });
+    };
+
+    const updateCommentLikes = (postId, comment) => {
+        setPosts((state) => {
+            const {_id, ...newParams} = comment;
+            const postIndex = state.findIndex((item) => item._id === postId);
+            const post = state[postIndex];
+            const commentIndex = post.comments.findIndex((item) => item._id === comment._id);
+            const c = post.comments[commentIndex];
+            const newComment = {
+                ...c,
+                ...newParams
+            };
+            const newItem = {
+                ...post,
+                comments: [...post.comments.slice(0, commentIndex), newComment, ...post.comments.slice(commentIndex + 1)]
+            };
+
+            return [...state.slice(0, postIndex), newItem, ...state.slice(postIndex + 1)];
+        });
     };
 
     const removePostById = (id) => {
@@ -226,6 +250,7 @@ const User = (props) => {
                                     updatePostLikes={updatePostLikes}
                                     updatePostComments={updatePostComments}
                                     toggleComments={toggleComments}
+                                    updateCommentLikes={updateCommentLikes}
                                 />
                             </div>
                         </div>
