@@ -1,81 +1,16 @@
 .profile {
     &__top {
         position: relative;
-        height: 300px;
     }
 
     &__bottom {
-        //position: relative;
         padding-bottom: 100px;
-    }
-
-    &__background {
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        filter: blur(2px);
-        background-position: 50% 80%;
-        background-size: cover;
     }
 
     &__container {
         position: absolute;
         left: 0;
         right: 0;
-    }
-
-    &__info {
-        position: absolute;
-        width: 100%;
-        left: 0;
-        bottom: 0;
-        border-top: 1px solid #7b7b7b;
-        background: rgba(black, .5);
-    }
-
-    &__avatar {
-        position: absolute;
-        transform: translateY(50%);
-        left: 0;
-        right: 0;
-
-        &-image {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            background-color: #ddd;
-            border-radius: 50%;
-            background-position: center;
-            background-size: cover;
-            border: 3px solid white;
-            overflow: hidden;
-            cursor: pointer;
-
-            &:hover {
-                .profile__avatar-form {
-                    opacity: 1;
-                }
-            }
-        }
-
-        &-form {
-            opacity: 0;
-            transition: all .3s;
-        }
-
-        &-form.active {
-            opacity: 1;
-        }
-    }
-
-    &__name {
-        padding-left: 260px;
-        padding-top: 20px;
-        font-size: 32px;
-        font-weight: 500;
-        min-height: 68px;
     }
 
     &__actions {

@@ -1,33 +1,34 @@
-import React, {useEffect, useState, useRef, useContext} from 'react'
+import React, {useEffect, useState} from 'react'
 import {connect} from 'react-redux'
-import {withApiService, withoutOwner} from '../hoc';
-import {actionUpdateUserAvatar} from "../../store/actions"
+import {withApiService, withoutOwner} from '../hoc'
+import {actionUpdateUserData} from "../../store/actions"
 import {bindActionCreators} from "redux"
-import VariableProvider from '../context/vars'
 
-import PostCreate from "./post-create";
-import ProfileWallList from "./profile-wall-list";
-import ProfileInfo from "./profile-info";
+import PostCreate from "./post-create"
+import ProfileWallList from "./profile-wall-list"
+import ProfileMain from "./profile-main"
 
-import {getUserInfo} from "../../helpers";
+import {getUserInfo} from "../../helpers"
 
-import cn from 'classnames'
 import './style.css'
 
 const User = (props) => {
-    const {apiService, actionUpdateUserAvatar, user, isUserPage, userPageId} = props;
-    const {id} = user;
+    const {
+        apiService,
+        actionUpdateUserData,
+        user,
+        isUserPage,
+        userPageId,
+        profileCounters,
+        updateProfileCounters,
+        avatarUrl,
+        setAvatarUrl
+    } = props;
+
     const isOwner = !isUserPage;
 
-    const {path: publicPath} = useContext(VariableProvider);
+    const [userData, setUserData] = useState({});
 
-    const avatarFileInput = useRef(null);
-
-    const [userName, setUserName] = useState('');
-    const [userId, setUserId] = useState(null);
-    const [avatarUrl, setAvatarUrl] = useState(null);
-    const [avatarFormActive, setAvatarFormStatus] = useState(false);
-    const [avatarPreviewImage, setAvatarPreviewImage] = useState(null);
     const [posts, setPosts] = useState([]);
     const [postsUI, setPostsUI] = useState([]);
 
@@ -42,12 +43,24 @@ const User = (props) => {
     useEffect(() => {
         if (isUserPage) {
             // other pages
-            apiService.getUserInfo(userPageId, id).then(res => {
+            apiService.getUserInfo(userPageId, user.id).then(res => {
                 const data = res.body.data;
+                const {postsCount, imagesCount} = getUserInfo(data.posts);
 
                 setAvatarUrl(data.avatarUrl);
-                setUserName(data.name);
-                setUserId(data.id);
+                updateProfileCounters({
+                    followersCount: data.followersCount,
+                    followingCount: data.followingCount,
+                    postsCount,
+                    imagesCount
+                });
+
+                setUserData({
+                    avatarUrl: data.avatarUrl,
+                    userName: data.name,
+                    userId: data.id,
+                    isFollowing: data.isFollowing
+                });
 
                 setPostsUI(getPostsInterface(data.posts));
                 setPosts(data.posts);
@@ -56,11 +69,16 @@ const User = (props) => {
             })
         } else {
             // me
-            setAvatarUrl(user.avatarUrl);
-            setUserName(user.name);
-            setUserId(user.id);
+            setUserData({
+                ...userData,
+                avatarUrl: user.avatarUrl,
+                userName: user.name,
+                userId: user.id,
+                // followersCount: user.followersCount,
+                // followingCount: user.followingCount
+            });
 
-            apiService.fetchPosts(id).then(res => {
+            apiService.fetchPosts(user.id).then(res => {
                 setPostsUI(getPostsInterface(res.body.posts));
                 setPosts(res.body.posts);
             }).catch(e => {
@@ -68,6 +86,33 @@ const User = (props) => {
             })
         }
     }, []);
+
+    const updateUserData = (key, value) => {
+        setUserData(state => {
+            return {
+                ...state,
+                [key]: value
+            }
+        });
+    };
+
+    const follow = () => {
+        apiService.follow(user.id, userPageId, isFollowing).then(res => {
+            const { isFollowing, client, user } = res.body;
+            updateUserData('isFollowing', isFollowing);
+            setUserData(state => {
+                return {
+                    ...state,
+                    followingCount: user.followingCount,
+                    followersCount: user.followersCount
+                }
+            });
+            actionUpdateUserData({
+                followingCount: client.followingCount,
+                followersCount: client.followersCount
+            });
+        })
+    };
 
     const toggleComments = (postId) => {
         const currentState = postsUI[postId].commentsOpened;
@@ -92,7 +137,25 @@ const User = (props) => {
     const addPost = (post) => {
         const postsInterface = {...postsUI, [post._id]: {commentsOpened: false}};
         setPostsUI(postsInterface);
-        setPosts([post, ...posts]);
+        setPosts((state) => {
+            return [post, ...state]
+        });
+
+        const postsCount = profileCounters.postsCount + 1;
+        const imagesCount = post.imageUrl ? profileCounters.imagesCount + 1 : profileCounters.imagesCount;
+
+        updateProfileCounters({
+            postsCount,
+            imagesCount
+        })
+
+        // setUserData(state => {
+        //     return {
+        //         ...state,
+        //         postsCount,
+        //         imagesCount
+        //     }
+        // });
     };
 
     const updatePostLikes = (post) => {
@@ -133,100 +196,34 @@ const User = (props) => {
         setPosts(newPosts);
     };
 
-    const onFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setAvatarFormStatus(true);
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-
-            reader.onloadend = function () {
-                const previewImage = reader.result;
-                setAvatarPreviewImage(previewImage);
-            };
-
-        } else {
-            setAvatarFormStatus(false);
-        }
-    };
-
-    const resetAvatarForm = () => {
-        setAvatarFormStatus(false);
-        avatarFileInput.current.value = null;
-    };
-
-    const uploadAvatar = (e) => {
-        e.preventDefault();
-
-        const data = new FormData();
-        data.append('avatar', avatarFileInput.current.files[0]);
-        data.append('id', id);
-
-        apiService.uploadAvatar(data).then(e => {
-            resetAvatarForm();
-            actionUpdateUserAvatar(e.avatarUrl)
-        })
-    };
-
-    const avatarClasses = cn({
-        'profile__avatar-form': true,
-        'active': avatarFormActive
-    });
-
-    const {postsCount, imagesCount} = getUserInfo(posts);
+    // const {userName, userId, followersCount, followingCount, postsCount, imagesCount, isFollowing} = userData;
+    const {userName, userId, isFollowing} = userData;
 
     return (
         <div className="profile">
             <div className="profile__top">
-                <div className="profile__background" style={{backgroundImage: 'url(https://images2.alphacoders.com/209/thumb-1920-209080.jpg)'}}>
-
-                </div>
-                <div className="profile__info">
-                    <div className="container">
-                        <ProfileInfo imagesCount={imagesCount} postsCount={postsCount} />
-                    </div>
-                </div>
-                <div className="profile__avatar">
-                    <div className="container">
-                        <div className="profile__avatar-image" style={{backgroundImage: `url(${publicPath}${avatarUrl})`}}>
-                            {
-                                isOwner ? (
-                                    <div className={avatarClasses}>
-                                        <form onSubmit={uploadAvatar} className="avatar-form">
-                                            <label className="avatar-form__label">
-                                                Upload a new photo
-                                                <input ref={avatarFileInput} onChange={onFileUpload} type="file"/>
-                                            </label>
-                                            <div className="avatar-form__content">
-                                                <div className="avatar-form__preview" style={{backgroundImage: `url(${avatarPreviewImage})`}}>
-
-                                                </div>
-                                                <div className="avatar-form__actions">
-                                                    <div className="avatar-form__apply">
-                                                        <button type="submit" className="btn">Apply</button>
-                                                    </div>
-                                                    <div className="avatar-form__cancel">
-                                                        <div onClick={resetAvatarForm} className="btn btn-danger">Cancel</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                ) : null
-                            }
-                        </div>
-                    </div>
-                </div>
+                <ProfileMain
+                    profileCounters={profileCounters}
+                    apiService={apiService}
+                    isOwner={isOwner}
+                    userName={userName}
+                    avatarUrl={avatarUrl}
+                    actionUpdateUserData={actionUpdateUserData}
+                />
             </div>
             <div className="profile__bottom">
                 <div className="container">
-                    <div className="profile__name">{userName}</div>
                     {
                         !isOwner ? (
                             <div className="profile__actions">
                                 <div className="profile__follow">
-                                    <div className="btn">Follow</div>
+                                    {
+                                        isFollowing ? (
+                                            <div onClick={follow} className="btn btn-danger">Unfollow</div>
+                                        ) : (
+                                            <div onClick={follow} className="btn">Follow</div>
+                                        )
+                                    }
                                 </div>
                             </div>
                         ) : null
@@ -269,7 +266,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return bindActionCreators({
-        actionUpdateUserAvatar
+        actionUpdateUserData
     }, dispatch)
 };
 

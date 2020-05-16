@@ -5,8 +5,8 @@ const Home = ({user}) => {
     const greeting = user.auth ? <p>Hello, <b>{user.name}</b></p> : <p>Hello, Guest!</p>;
 
     return (
-        <div>
-            <h3 className="mb-3">Home page 2</h3>
+        <div className="container">
+            <h3 className="mb-3">Home page</h3>
             {greeting}
         </div>
     )

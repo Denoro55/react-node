@@ -20,17 +20,13 @@ const userSchema = new Schema({
     },
     backgroundUrl: {
         type: String
+    },
+    followers: {
+        type: Array
+    },
+    following: {
+        type: Array
     }
-    // messagesRead: [{
-    //     date: {
-    //         type: Date,
-    //         default: Date.now()
-    //     },
-    //     to: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'User'
-    //     }
-    // }]
 });
 
 module.exports = model('User', userSchema);

@@ -39,6 +39,7 @@ const Header = ({isAuthenticated, actionUnauthorize, user}) => {
     const items = [
         {exact: true, to: '/', name: 'Home', isAuth: false},
         {exact: true, to: '/me', name: 'Me', isAuth: true},
+        {exact: true, to: '/followers', name: 'Followers', isAuth: true},
         {exact: false, to: '/store', name: 'Store', isAuth: false},
         {exact: false, to: '/messages/', name: 'Messages', isAuth: true},
     ];

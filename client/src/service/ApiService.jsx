@@ -173,6 +173,17 @@ class ApiService {
         });
     }
 
+    follow(followerId, followingId, isFollowing) {
+        return this.getRequest('follow', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({followerId, followingId, isFollowing})
+        });
+    }
+
     setToken(token) {
         this.token = token;
     }

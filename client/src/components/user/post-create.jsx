@@ -64,7 +64,6 @@ const PostCreate = (props) => {
             data.append('image', file);
 
             apiService.createPost(data).then(res => {
-                console.log('post created ', e);
                 resetForm();
                 addPost(res.body.post);
             })

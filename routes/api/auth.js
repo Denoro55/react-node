@@ -8,6 +8,7 @@ const { validationResult } = require('express-validator');
 const { RegisterValidator, LoginValidator } = require('../../validators');
 
 const User = require('../../models/User');
+const Post = require('../../models/Post');
 
 router.post('/auth', (req, res) => {
     const auth = req.session.auth || false;
@@ -69,12 +70,24 @@ router.post('/register', RegisterValidator, async (req, res) => {
 });
 
 router.post('/userData', authMiddleware, async (req, res) => {
-    const user = await User.findOne({_id: req.user.userId});
+    const {userId} = req.user;
+
+    const user = await User.findOne({_id: userId});
+    const posts = await Post.find({owner: userId});
+
+    const postsWithImages = posts.filter(p => p.imageUrl);
+    const imagesCount = postsWithImages.length;
+
     const data = {
         name: user.name,
         id: user._id,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl,
+        followersCount: user.followers.length || 0,
+        followingCount: user.following.length || 0,
+        postsCount: posts.length,
+        imagesCount: imagesCount
     };
+
     return res.json({data});
 });
 

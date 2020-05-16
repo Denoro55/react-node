@@ -13,14 +13,20 @@ export const actionUnauthorize = () => {
 export const actionGetUserDataSuccess = (payload) => ({type: 'GET_USER_SUCCESS', payload});
 export const actionGetUserDataFailure = () => ({type: 'GET_USER_FAILURE'});
 export const actionGetUserData = () => ({type: 'GET_USER'});
-export const actionUpdateUserAvatar = (payload) => ({type: 'USER_AVATAR_UPDATE', payload});
+export const actionUpdateUserData = (payload) => ({type: 'USER_DATA_UPDATE', payload});
 
 export const getUserData = (apiService, token) => () => (dispatch) => {
     dispatch(actionGetUserData());
 
     return apiService.getUserData().then(response => {
-        const res = response.body;
-        const data = {auth: true, token, name: res.data.name, id: res.data.id, avatarUrl: res.data.avatarUrl};
+        const res = response.body.data;
+
+        const data = {
+            auth: true,
+            token,
+            ...res
+        };
+
         return dispatch(actionGetUserDataSuccess(data));
     }).catch(err => {
         console.log(err);

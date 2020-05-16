@@ -3,7 +3,9 @@ const initialState = {
     auth: false,
     token: null,
     id: null,
-    avatarUrl: null
+    avatarUrl: null,
+    followingCount: 0,
+    followersCount: 0
 };
 
 const userReducer = (state = initialState, action) => {
@@ -16,10 +18,10 @@ const userReducer = (state = initialState, action) => {
                 ...action.payload
             };
 
-        case 'USER_AVATAR_UPDATE':
+        case 'USER_DATA_UPDATE':
             return {
                 ...state,
-                avatarUrl: action.payload
+                ...action.payload
             };
 
         case 'USER_UNAUTHORIZE':

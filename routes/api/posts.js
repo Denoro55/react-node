@@ -14,6 +14,7 @@ const fileMiddleware = require('../../middleware/file');
 
 const timeSince = require('../../utils/timeSince');
 const prepareComments = require('../../utils/prepareComments');
+const preparePosts = require('../../utils/preparePosts');
 
 router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async (req, res) => {
     const {id, wallId, text} = req.body;
@@ -51,17 +52,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
     const userId = req.body.id;
 
     const posts = await Post.aggregate(postsAggregations(userId));
-
-    const preparedPosts = posts.map(post => {
-        return {
-            ...post,
-            comments: prepareComments(post.comments, (c) => c.body),
-            user: {
-                name: post.user[0].name
-            },
-            time: timeSince(new Date(post.date))
-        }
-    });
+    const preparedPosts = preparePosts(posts);
 
     res.json({ posts: preparedPosts })
 });

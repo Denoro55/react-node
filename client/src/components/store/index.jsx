@@ -4,7 +4,9 @@ import {connect} from 'react-redux'
 const Store = (props) => {
 
     return (
-        <h3>Store page</h3>
+        <div className="container">
+            <h3>Store page</h3>
+        </div>
     )
 };
 
