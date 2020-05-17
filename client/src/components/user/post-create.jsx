@@ -1,11 +1,8 @@
-import React, {useContext, useRef, useState} from "react";
-import VariableProvider from '../context/vars';
+import React, {useRef, useState} from "react";
 import cn from 'classnames'
 
 const PostCreate = (props) => {
     const {apiService, user, addPost, wallId} = props;
-
-    const publicPath = useContext(VariableProvider);
 
     const [postText, setPostText] = useState('');
     const [postImageSrc, setPostImageSrc] = useState(null);

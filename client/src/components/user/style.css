@@ -73,6 +73,7 @@
 .profile__top {
   position: relative; }
 .profile__bottom {
+  padding-top: 50px;
   padding-bottom: 100px; }
 .profile__container {
   position: absolute;
@@ -82,14 +83,13 @@
   padding-top: 30px; }
 .profile__wall {
   position: relative;
-  padding-left: 170px;
-  padding-top: 50px; }
+  padding-left: 170px; }
   .profile__wall-left {
     max-width: 450px; }
   .profile__wall-bar {
     position: absolute;
     left: 120px;
-    top: 50px;
+    top: 0;
     bottom: 0;
     display: block;
     width: 4px;
@@ -374,27 +374,6 @@
     justify-content: flex-end;
     width: 80px;
     flex-shrink: 0; }
-
-.me__block {
-  display: flex; }
-.me__info {
-  padding-left: 20px; }
-.me__avatar {
-  margin-bottom: 15px; }
-  .me__avatar img {
-    max-width: 300px; }
-.me__avatar-edit {
-  padding-top: 15px; }
-
-.avatar-loader {
-  width: 100%;
-  display: flex; }
-  .avatar-loader__left {
-    flex: 1;
-    margin-right: 15px; }
-
-.form-control {
-  height: auto; }
 
 .profile-wall__item {
   margin-bottom: 30px; }

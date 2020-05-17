@@ -90,6 +90,93 @@ const postsAggregations = (userId, clientId = userId) => {
     ];
 };
 
+const messagesAggregation = (id) => {
+    return [
+        {
+            $group: {
+                _id: {to: "$to", from: "$from"},
+                from: {$last: "$from"},
+                to: {$last: "$to"},
+                text: {$last: "$text"},
+                date: {$last: "$date"}
+            }
+        },
+        {
+            $match: {
+                $or: [
+                    {from: ObjectId(id)},
+                    {to: ObjectId(id)}
+                ]
+            }
+        },
+        {
+            $addFields: {
+                roomId: {
+                    $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
+                }
+            }
+        },
+        {
+            $sort: {
+                date: 1
+            }
+        },
+        {
+            $group: {
+                _id: "$roomId",
+                from: {$last: "$from"},
+                to: {$last: "$to"},
+                text: {$last: "$text"},
+                date: {$last: "$date"}
+            }
+        },
+        {
+            $sort: {
+                date: -1
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $lookup: {
+                from: "chats",
+                pipeline: [
+                    {
+                        $match: {
+                            from: ObjectId(id),
+                            to: ObjectId.valueOf("$_id")
+                        }
+                    }
+                ],
+                as: "chat"
+            }
+        },
+        {
+            $project: {
+                chat: {
+                    $filter: {
+                        input: "$chat",
+                        as: "item",
+                        cond: { $eq: [ "$$item.to", "$_id" ] }
+                    }
+                },
+                user: 1,
+                from: 1,
+                to: 1,
+                text: 1,
+                date: 1
+            }
+        }
+    ]
+};
+
 module.exports = {
-    postsAggregations
+    postsAggregations,
+    messagesAggregation
 };

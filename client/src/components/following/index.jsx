@@ -5,11 +5,11 @@ import {useSelector} from "react-redux";
 import {withApiService} from '../hoc';
 import Users from '../users';
 
-const Followers = (props) => {
+const Following = (props) => {
     const {apiService} = props;
     const user = useSelector(state => state.user);
 
-    const {followersCount, followingCount, imagesCount, postsCount, avatarUrl, name, id} = user;
+    const {followersCount, followingCount, imagesCount, postsCount, avatarUrl, name} = user;
 
     const profileCounters = {
         followersCount, followingCount, imagesCount, postsCount
@@ -27,11 +27,11 @@ const Followers = (props) => {
             </div>
             <div className="profile__bottom">
                 <div className="container">
-                    <Users fetchFunc={apiService.fetchFollowers.bind(apiService)} />
+                    <Users fetchFunc={apiService.fetchFollowing.bind(apiService)}/>
                 </div>
             </div>
         </div>
     )
 };
 
-export default withApiService(connect()(Followers));
+export default withApiService(connect()(Following));

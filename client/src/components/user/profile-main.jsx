@@ -1,8 +1,12 @@
 import React, {useContext, useRef, useState} from 'react'
-import {useSelector} from "react-redux";
+import {connect, useSelector} from "react-redux";
 import cn from "classnames";
 
+import {withApiService} from '../hoc';
+
 import VariableProvider from '../context/vars'
+import {bindActionCreators} from "redux";
+import {actionUpdateUserData} from "../../store/actions";
 
 const ProfileMain = (props) => {
     const {
@@ -21,7 +25,7 @@ const ProfileMain = (props) => {
         followersCount = 0,
     } = profileCounters;
 
-    const {path: publicPath} = useContext(VariableProvider);
+    const {publicPath} = useContext(VariableProvider);
 
     const avatarFileInput = useRef(null);
     const user = useSelector(state => state.user);
@@ -159,4 +163,14 @@ const ProfileMain = (props) => {
     )
 };
 
-export default ProfileMain;
+const mapStateToProps = (state) => {
+    return {}
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return bindActionCreators({
+        actionUpdateUserData
+    }, dispatch)
+};
+
+export default withApiService(connect(mapStateToProps, mapDispatchToProps)(ProfileMain))

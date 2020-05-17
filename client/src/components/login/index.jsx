@@ -62,7 +62,7 @@ class Login extends React.Component {
             <div className="container">
                 <div className="row">
                     <div className="col-4">
-                        <h3 className="mb-4">Login</h3>
+                        <h4 className="mb-4">Login</h4>
                         <form onSubmit={this.login}>
                             <div className="mb-3">
                                 <div className="form-group">

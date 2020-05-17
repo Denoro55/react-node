@@ -1,0 +1,53 @@
+.user-card {
+  text-align: center;
+  position: relative;
+  background-color: #fff;
+  transition: box-shadow .25s;
+  border-radius: 2px;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+  color: #515561; }
+  .user-card__head {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px; }
+  .user-card__body {
+    padding: 20px 24px 6px; }
+  .user-card__name {
+    font-size: 18px;
+    font-weight: 500; }
+  .user-card__image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #ddd;
+    background-size: cover;
+    background-position: center; }
+  .user-card__actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px; }
+  .user-card__action {
+    display: block;
+    background-color: inherit;
+    position: relative;
+    padding: 8px 4px;
+    color: #ffab40;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 9px;
+    text-transform: uppercase; }
+  .user-card__info {
+    display: flex;
+    border-top: 1px solid rgba(160, 160, 160, 0.2); }
+    .user-card__info-item {
+      width: 33.333%;
+      border-left: 1px solid rgba(160, 160, 160, 0.2);
+      padding: 10px; }
+      .user-card__info-item:first-child {
+        border-left: 0; }
+    .user-card__info-key {
+      font-weight: 500; }
+    .user-card__info-value {
+      font-size: 14px; }
+
+/*# sourceMappingURL=style.css.map */

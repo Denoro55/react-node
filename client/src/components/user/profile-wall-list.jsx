@@ -3,7 +3,7 @@ import VariableProvider from '../context/vars'
 
 const ProfileWallList = (props) => {
     const {posts, postsUI, isOwner = false, user, apiService, removePostById, toggleComments, updatePostLikes, updatePostComments, updateCommentLikes} = props;
-    const {path: publicPath} = useContext(VariableProvider);
+    const {publicPath} = useContext(VariableProvider);
 
     const createComment = (e, postId) => {
         e.preventDefault();

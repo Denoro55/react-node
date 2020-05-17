@@ -30,6 +30,17 @@ textarea {
   padding: 10px;
   border: 1px solid #ddd; }
 
+.link-yellow {
+  color: #ffab40;
+  transition: color .3s ease;
+  cursor: pointer; }
+  .link-yellow:hover {
+    color: #ffd8a6; }
+
+.container {
+  width: 1200px;
+  max-width: 100%; }
+
 #toast-container {
   right: inherit !important;
   top: inherit !important;

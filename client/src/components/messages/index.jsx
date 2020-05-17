@@ -21,12 +21,6 @@ const Messages = (props) => {
         showChat = true;
     }
 
-    // const initialList = [
-    //     {name: 'Den', id: '5eaa9308d326261eccf1e564', updated: false},
-    //     {name: 'Max', id: '5eaacfcddeeb382da4898245', updated: true},
-    //     {name: 'Bob', id: '5eaad057a291b831b8822066', updated: false}
-    // ];
-
     const [chat, setChat] = useState(showChat);
     const chatLoading = useSelector((state) => state.chat.loading);
     const messagesLoading = useSelector((state) => state.messages.loading);
@@ -51,21 +45,21 @@ const Messages = (props) => {
             openChat={(id) => openChat(id)}
             messagesList={messagesList}
         />
-        : <Chat backToMessages={backToMessages}
-                companionId={queryParams.chat}
-                chatLoading={chatLoading}
+        : <Chat
+            backToMessages={backToMessages}
+            companionId={queryParams.chat}
+            chatLoading={chatLoading}
         />;
 
     return (
         <div className="container">
-            <h3 className="mb-4">Messages</h3>
-            { messagesLoading ? <Spinner/> : (
-                <div className="messages">
+            <div className="messages">
+                { messagesLoading ? <Spinner/> : (
                     <div className="messages__left">
                         {currentContent}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     )
 };

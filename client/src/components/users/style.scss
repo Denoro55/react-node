@@ -1,0 +1,13 @@
+.users {
+    &__list {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -15px;
+    }
+
+    &__item {
+        width: 25%;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+}

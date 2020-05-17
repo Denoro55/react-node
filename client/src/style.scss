@@ -43,6 +43,21 @@ textarea {
     border: 1px solid $color_gray_light;
 }
 
+.link-yellow {
+    color: #ffab40;
+    transition: color .3s ease;
+    cursor: pointer;
+
+    &:hover {
+        color: #ffd8a6;
+    }
+}
+
+.container {
+    width: 1200px;
+    max-width: 100%;
+}
+
 // toast
 
 #toast-container {

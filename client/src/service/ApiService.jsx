@@ -13,7 +13,10 @@ class ApiService {
 
             fetch(`${this.URL}${url}`, params)
                 .then(r =>  r.json().then(data => ({status: r.status, body: data})))
-                .then(res => resolve(res));
+                .then(res => {
+                    if (res.status === 401) reject(new UnauthorizedError());
+                    resolve(res);
+                });
         });
     }
 
@@ -95,14 +98,24 @@ class ApiService {
     }
 
     getUserData = () => {
-        const token = this.getToken();
-
         return this.getRequest('userData', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token
+                'Authorization': this.getToken()
             }
+        });
+    };
+
+    // messages
+    sendMessage = (receiverId, senderId, message, companion, date) => {
+        return this.getRequest('sendMessage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({id: receiverId, senderId, message, companion, date})
         });
     };
 
@@ -174,6 +187,7 @@ class ApiService {
     }
 
     follow(followerId, followingId, isFollowing) {
+        console.log(followerId, followingId, isFollowing);
         return this.getRequest('follow', {
             method: 'POST',
             headers: {
@@ -181,6 +195,39 @@ class ApiService {
                 'Authorization': this.getToken()
             },
             body: JSON.stringify({followerId, followingId, isFollowing})
+        });
+    }
+
+    fetchFollowers(userId) {
+        return this.getRequest('followers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({userId})
+        });
+    }
+
+    fetchFollowing(userId) {
+        return this.getRequest('following', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({userId})
+        });
+    }
+
+    fetchUsers(match) {
+        return this.getRequest('users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({match})
         });
     }
 

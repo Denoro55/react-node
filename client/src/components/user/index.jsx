@@ -100,12 +100,9 @@ const User = (props) => {
         apiService.follow(user.id, userPageId, isFollowing).then(res => {
             const { isFollowing, client, user } = res.body;
             updateUserData('isFollowing', isFollowing);
-            setUserData(state => {
-                return {
-                    ...state,
-                    followingCount: user.followingCount,
-                    followersCount: user.followersCount
-                }
+            updateProfileCounters({
+                followingCount: user.followingCount,
+                followersCount: user.followersCount
             });
             actionUpdateUserData({
                 followingCount: client.followingCount,
@@ -148,14 +145,6 @@ const User = (props) => {
             postsCount,
             imagesCount
         })
-
-        // setUserData(state => {
-        //     return {
-        //         ...state,
-        //         postsCount,
-        //         imagesCount
-        //     }
-        // });
     };
 
     const updatePostLikes = (post) => {
@@ -192,8 +181,20 @@ const User = (props) => {
     };
 
     const removePostById = (id) => {
-        const newPosts = posts.filter(p => p._id !== id);
-        setPosts(newPosts);
+        const index = posts.findIndex(p => p._id === id);
+        const post = posts[index];
+
+        const postsCount = profileCounters.postsCount - 1;
+        const imagesCount = post.imageUrl ? profileCounters.imagesCount - 1 : profileCounters.imagesCount;
+
+        updateProfileCounters({
+            postsCount,
+            imagesCount
+        });
+
+        setPosts((state) => {
+            return state.filter(p => p._id !== id);
+        });
     };
 
     // const {userName, userId, followersCount, followingCount, postsCount, imagesCount, isFollowing} = userData;
@@ -204,11 +205,9 @@ const User = (props) => {
             <div className="profile__top">
                 <ProfileMain
                     profileCounters={profileCounters}
-                    apiService={apiService}
                     isOwner={isOwner}
                     userName={userName}
                     avatarUrl={avatarUrl}
-                    actionUpdateUserData={actionUpdateUserData}
                 />
             </div>
             <div className="profile__bottom">

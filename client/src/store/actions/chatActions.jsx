@@ -17,14 +17,14 @@ export const addChatMessage = ({name, text}) => ({type: 'CHAT_MESSAGE_ADD', payl
 export const actionSendMessage = (apiService) => (companion, user, message, date) => (dispatch) => {
     const receiverId = companion.id;
 
-    const params = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify({id: receiverId, senderId: user.id, message, companion, date})
-    };
+    // const params = {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'Authorization': `Bearer ${user.token}`
+    //     },
+    //     body: JSON.stringify({id: receiverId, senderId: user.id, message, companion, date})
+    // };
 
-    return apiService.getRequest('sendMessage', params);
+    return apiService.sendMessage(receiverId, user.id, message, companion, date);
 };

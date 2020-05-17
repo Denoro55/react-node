@@ -10,8 +10,10 @@ import Login from "../login";
 import Register from '../register';
 import Messages from '../messages';
 import Followers from '../followers';
+import Following from '../following';
 import UserPage from "../hoc/userPage";
 import MePage from '../hoc/mePage';
+import Search from '../search';
 
 import {withApiService} from "../hoc";
 import {connect} from "react-redux";
@@ -84,7 +86,9 @@ class App extends React.Component {
                         <Route path="/store" component={Store} />
                         <PrivateRoute exact path="/me" component={MePage}/>
                         <PrivateRoute exact path="/followers" component={Followers}/>
+                        <PrivateRoute exact path="/following" component={Following}/>
                         <PrivateRoute exact path="/messages/" component={Messages}/>
+                        <PrivateRoute exact path="/search" component={Search}/>
                         <Route path="/login" component={Login} />
                         <Route path="/register" component={Register} />
                         <Route path="/test" render={() => {

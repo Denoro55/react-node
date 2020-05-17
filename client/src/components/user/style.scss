@@ -12,41 +12,41 @@
 @import "style/comment-create";
 @import "style/comment";
 
-.me {
-    &__block {
-        display: flex;
-    }
+//.me {
+//    &__block {
+//        display: flex;
+//    }
+//
+//    &__info {
+//        padding-left: 20px;
+//    }
+//
+//    &__avatar {
+//        margin-bottom: 15px;
+//
+//        img {
+//            max-width: 300px;
+//        }
+//    }
+//
+//    &__avatar-edit {
+//        padding-top: 15px;
+//    }
+//}
 
-    &__info {
-        padding-left: 20px;
-    }
+//.avatar-loader {
+//    width: 100%;
+//    display: flex;
+//
+//    &__left {
+//        flex: 1;
+//        margin-right: 15px;
+//    }
+//}
 
-    &__avatar {
-        margin-bottom: 15px;
-
-        img {
-            max-width: 300px;
-        }
-    }
-
-    &__avatar-edit {
-        padding-top: 15px;
-    }
-}
-
-.avatar-loader {
-    width: 100%;
-    display: flex;
-
-    &__left {
-        flex: 1;
-        margin-right: 15px;
-    }
-}
-
-.form-control {
-    height: auto;
-}
+//.form-control {
+//    height: auto;
+//}
 
 .profile-wall {
     &__item {

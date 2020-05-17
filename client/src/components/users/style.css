@@ -1,0 +1,10 @@
+.users__list {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px; }
+.users__item {
+  width: 25%;
+  margin-bottom: 30px;
+  padding: 0 15px; }
+
+/*# sourceMappingURL=style.css.map */

@@ -57,7 +57,7 @@ class Register extends React.Component {
             <div className="container">
                 <div className="row">
                     <div className="col-4">
-                        <h3 className="mb-4">Register</h3>
+                        <h4 className="mb-4">Register</h4>
                         <form onSubmit={this.register}>
                             <div className="mb-3">
                                 <div className="form-group">

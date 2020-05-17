@@ -33,7 +33,12 @@ router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async
         imageUrl: filename,
         date: Date.now()
     });
+
     await post.save();
+
+    await user.updateOne({
+        "$push": { "posts": ObjectId(post._id) }
+    });
 
     const {_doc: {owner, ...rest}} = post;
 

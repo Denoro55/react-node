@@ -39,7 +39,7 @@ function renderDOM() {
         <React.StrictMode>
             <Provider store={store}>
                 <ApiServiceProvider value={apiService}>
-                    <VariablesProvider.Provider value={{path: '/public/images/'}}>
+                    <VariablesProvider.Provider value={{publicPath: '/public/images/'}}>
                         <Router>
                             <App/>
                         </Router>

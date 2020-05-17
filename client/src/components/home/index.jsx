@@ -6,7 +6,7 @@ const Home = ({user}) => {
 
     return (
         <div className="container">
-            <h3 className="mb-3">Home page</h3>
+            <h4 className="mb-3">Home page</h4>
             {greeting}
         </div>
     )

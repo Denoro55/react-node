@@ -11,6 +11,8 @@ const Chat = (props) => {
     const {backToMessages, chatLoading, user,
         companionId, fetchChat, actionUpdateChatStatus, actionSendMessage, addChatMessage} = props;
 
+    console.log(companionId);
+
     const [message, setMessage] = useState('');
     const chatMessages = useSelector(state => state.chat.messages);
     const companion = useSelector(state => state.chat.companion);
@@ -26,7 +28,7 @@ const Chat = (props) => {
     }, []);
 
     useEffect(() => {
-        listContainer.current.scrollTop = listContainer.current.scrollHeight;
+        // listContainer.current.scrollTop = listContainer.current.scrollHeight;
     }, [chatMessages]);
 
     const sendMessage = (text, companion) => {

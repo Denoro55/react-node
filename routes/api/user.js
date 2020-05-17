@@ -11,6 +11,7 @@ const ObjectId = mongoose.Types.ObjectId;
 // utils
 const {postsAggregations} = require('../../utils/aggregations');
 const preparePosts = require('../../utils/preparePosts');
+const prepareFollowers = require('../../utils/prepareFollowers');
 
 router.post('/userInfo', authMiddleware, async (req, res) => {
     const {id: userId, clientId} = req.body;
@@ -80,6 +81,10 @@ router.post('/follow', authMiddleware, async (req, res) => {
             }
         );
 
+        if (!client) {
+            return res.status(429).json({ ok: false });
+        }
+
         response.client.followersCount = client.followers.length;
         response.client.followingCount = client.following.length;
 
@@ -112,6 +117,10 @@ router.post('/follow', authMiddleware, async (req, res) => {
             }
         );
 
+        if (!client) {
+            return res.status(429).json({ ok: false });
+        }
+
         response.client.followersCount = client.followers.length;
         response.client.followingCount = client.following.length;
 
@@ -143,6 +152,104 @@ router.post('/uploadAvatar', authMiddleware, fileMiddleware.single('avatar'), as
     await user.updateOne({avatarUrl: filename});
 
     res.json({avatarUrl: filename});
+});
+
+router.post('/followers', async (req, res) => {
+    const {userId} = req.body;
+
+    try {
+        const users = await User.aggregate([
+            {
+                $match: {
+                    _id: ObjectId(userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "followers",
+                    foreignField: "_id",
+                    as: "followers"
+                }
+            },
+            { $unwind: { path: "$followers", preserveNullAndEmptyArrays: false } },
+            {
+                $addFields: {
+                    isFollowing: { $in: [ ObjectId(userId), '$followers.followers' ] }
+                }
+            }
+        ]);
+
+        const preparedFollowers = prepareFollowers(users, (u) => u.followers);
+
+        res.json({ok: true, users: preparedFollowers});
+
+    } catch (e) {
+        console.log(e);
+    }
+});
+
+router.post('/following', async (req, res) => {
+    const {userId} = req.body;
+
+    try {
+        const users = await User.aggregate([
+            {
+                $match: {
+                    _id: ObjectId(userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "following",
+                    foreignField: "_id",
+                    as: "following"
+                }
+            },
+            { $unwind: { path: "$following", preserveNullAndEmptyArrays: false } },
+            {
+                $addFields: {
+                    isFollowing: { $in: [ ObjectId(userId), '$following.followers' ] }
+                }
+            }
+        ]);
+
+        const preparedFollowing = prepareFollowers(users, (u) => u.following);
+
+        res.json({ok: true, users: preparedFollowing});
+
+    } catch (e) {
+        console.log(e);
+    }
+});
+
+router.post('/users', async (req, res) => {
+    const {match} = req.body;
+
+    try {
+        const users = await User.find({
+            name: {
+                $regex: new RegExp(`${match}`, 'i')
+            }
+        });
+
+        const preparedUsers = users.map(user => {
+            return {
+                _id: user._id,
+                name: user.name,
+                avatarUrl: user.avatarUrl,
+                followersCount: user.followers.length,
+                followingCount: user.following.length,
+                postsCount: user.posts.length,
+                isFollowing: user.isFollowing
+            }
+        });
+
+        res.json({ok: true, users: preparedUsers});
+    } catch (e) {
+        console.log(e);
+    }
 });
 
 module.exports = router;

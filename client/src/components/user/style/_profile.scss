@@ -4,6 +4,7 @@
     }
 
     &__bottom {
+        padding-top: 50px;
         padding-bottom: 100px;
     }
 
@@ -20,7 +21,6 @@
     &__wall {
         position: relative;
         padding-left: 170px;
-        padding-top: 50px;
 
         &-left {
             max-width: 450px;
@@ -29,7 +29,7 @@
         &-bar {
             position: absolute;
             left: 120px;
-            top: 50px;
+            top: 0;
             bottom: 0;
             display: block;
             width: 4px;

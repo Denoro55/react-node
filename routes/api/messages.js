@@ -8,6 +8,8 @@ const Chat = require('../../models/Chat');
 const Message = require('../../models/Message');
 const ObjectId = mongoose.Types.ObjectId;
 
+const {messagesAggregation} = require('../../utils/aggregations');
+
 router.post('/sendMessage', authMiddleware, async (req, res) => {
     const {id, senderId, message, date} = req.body;
 
@@ -55,89 +57,7 @@ router.post('/listMessages', async (req, res) => {
 
     console.log('messages of ', id);
 
-    const messages = await Message.aggregate([
-        {
-            $group: {
-                _id: {to: "$to", from: "$from"},
-                from: {$last: "$from"},
-                to: {$last: "$to"},
-                text: {$last: "$text"},
-                date: {$last: "$date"}
-            }
-        },
-        {
-            $match: {
-                $or: [
-                    {from: ObjectId(id)},
-                    {to: ObjectId(id)}
-                ]
-            }
-        },
-        {
-            $addFields: {
-                roomId: {
-                    $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
-                }
-            }
-        },
-        {
-            $sort: {
-                date: 1
-            }
-        },
-        {
-            $group: {
-                _id: "$roomId",
-                from: {$last: "$from"},
-                to: {$last: "$to"},
-                text: {$last: "$text"},
-                date: {$last: "$date"}
-            }
-        },
-        {
-            $sort: {
-                date: -1
-            }
-        },
-        {
-            $lookup: {
-                from: "users",
-                localField: "_id",
-                foreignField: "_id",
-                as: "user"
-            }
-        },
-        {
-            $lookup: {
-                from: "chats",
-                pipeline: [
-                    {
-                        $match: {
-                            from: ObjectId(id),
-                            to: ObjectId.valueOf("$_id")
-                        }
-                    }
-                ],
-                as: "chat"
-            }
-        },
-        {
-            $project: {
-                chat: {
-                    $filter: {
-                        input: "$chat",
-                        as: "item",
-                        cond: { $eq: [ "$$item.to", "$_id" ] }
-                    }
-                },
-                user: 1,
-                from: 1,
-                to: 1,
-                text: 1,
-                date: 1
-            }
-        }
-    ]);
+    const messages = await Message.aggregate(messagesAggregation(id));
 
     const chats = await Chat.aggregate([
         {
@@ -152,59 +72,22 @@ router.post('/listMessages', async (req, res) => {
         },
     ]);
 
-    // const chats = await Chat.aggregate([
-    //     {
-    //         $match: {
-    //             $or: [
-    //                 {from: ObjectId(id)},
-    //                 {to: ObjectId(id)},
-    //             ]
-    //         }
-    //     },
-    //     {
-    //         $addFields: {
-    //             roomId: {
-    //                 $cond: { if: { $eq: [ "$from", ObjectId(id) ] }, then: "$to", else: "$from" }
-    //             },
-    //         }
-    //     },
-    //     {
-    //         $sort: {
-    //             date: 1
-    //         }
-    //     },
-    //     {
-    //         $group: {
-    //             _id: "$roomId",
-    //             date: {$last: "$date"},
-    //             from: {$last: "$from"}
-    //         }
-    //     },
-    //     {
-    //         $sort: {
-    //             date: -1
-    //         }
-    //     },
-    // ]);
-
     console.log('chats: ', chats);
     console.log('messages: ', messages);
 
     const preparedMessages = messages.map((m, idx) => {
         const chat = m.chat[0];
-        console.log(chat);
+        const user = m.user[0];
         const isUpdated = m.from.toString() !== id.toString() && chat.date < m.date;
-        // const isUpdated = chat.date < m.date && chat.from.toString() !== m.from.toString();
-        // const isUpdated = chat.from.toString() !== id.toString() && chat.date < m.date;
+
         return {
-            name: m.user[0].name,
+            name: user.name,
             text: m.text,
             updated: isUpdated,
-            id: m._id
+            id: m._id,
+            avatarUrl: user.avatarUrl
         }
     });
-
-    // console.log('prepared', preparedMessages);
 
     res.json({messages: preparedMessages});
 });

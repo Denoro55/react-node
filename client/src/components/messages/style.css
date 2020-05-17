@@ -1,4 +1,5 @@
 .messages {
+  padding-top: 50px;
   display: flex; }
   .messages__left {
     flex: 1 1 auto; }
@@ -15,19 +16,28 @@
   .message-item__content {
     display: flex;
     flex: 1 1 auto; }
+  .message-item__info {
+    padding-top: 5px; }
   .message-item__avatar {
-    width: 30px;
     margin-right: 15px;
     padding-top: 5px; }
     .message-item__avatar-icon {
-      width: 30px;
-      height: 30px;
+      width: 45px;
+      height: 45px;
       border-radius: 50%;
-      background-color: #ddd; }
+      background-color: #ddd;
+      background-size: cover;
+      background-position: center; }
   .message-item__actions {
     flex-shrink: 0;
     padding-left: 40px;
     margin-left: auto; }
+  .message-item__name {
+    font-weight: 500;
+    margin-bottom: 5px; }
+  .message-item__text {
+    font-size: 14px;
+    color: #848484; }
 
 .collection-item {
   padding: 15px 20px !important; }
