@@ -68,7 +68,8 @@
     margin-right: 5px; }
 
 .post-comments-button, .post-likes-button {
-  cursor: pointer; }
+  cursor: pointer;
+  user-select: none; }
 
 .profile__top {
   position: relative; }
@@ -80,7 +81,7 @@
   left: 0;
   right: 0; }
 .profile__actions {
-  padding-top: 30px; }
+  padding-bottom: 40px; }
 .profile__wall {
   position: relative;
   padding-left: 170px; }

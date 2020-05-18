@@ -13,36 +13,43 @@ const {messagesAggregation} = require('../../utils/aggregations');
 router.post('/sendMessage', authMiddleware, async (req, res) => {
     const {id, senderId, message, date} = req.body;
 
-    const senderUser = await User.findOne({_id: senderId});
-    const receiverUser = await User.findOne({_id: id});
+    try {
+        if (req.user.userId.toString() !== senderId.toString()) {
+            return res.status(401).json({message: 'Unauthorized'});
+        }
 
-    // create companion chat if does not
-    const chat = await Chat.findOne({from: id, to: senderId});
-    if (!chat) {
-        const newChat = new Chat({from: id, to: senderId, date: -1});
-        await newChat.save();
+        const senderUser = await User.findOne({_id: senderId});
+        const receiverUser = await User.findOne({_id: id});
+
+        // create companion chat if does not
+        const chat = await Chat.findOne({from: id, to: senderId});
+        if (!chat) {
+            const newChat = new Chat({from: id, to: senderId, date: -1});
+            await newChat.save();
+        }
+
+        // update chat last time watching
+        // const chat = await Chat.findOne({from: senderId, to: id});
+        // if (chat) {
+        //     await chat.update({from: senderId, to: id, date});
+        // } else {
+        //     const newChat = new Chat({from: senderId, to: id, date});
+        //     await newChat.save();
+        // }
+
+        const newMessage = new Message({
+            name: senderUser,
+            text: message.text,
+            from: senderUser,
+            to: receiverUser,
+            date
+        });
+        await newMessage.save();
+
+        res.json({success: true});
+    } catch (e) {
+        res.status(500).end();
     }
-
-    // // // update chat last time watching
-    // const chat = await Chat.findOne({from: senderId, to: id});
-    // if (chat) {
-    //     await chat.update({from: senderId, to: id, date});
-    // } else {
-    //     const newChat = new Chat({from: senderId, to: id, date});
-    //     await newChat.save();
-    // }
-
-    const newMessage = new Message({
-        name: senderUser,
-        text: message.text,
-        from: senderUser,
-        to: receiverUser,
-        date
-    });
-
-    await newMessage.save();
-
-    res.json({success: true});
 });
 
 router.post('/listMessages', async (req, res) => {
@@ -57,39 +64,44 @@ router.post('/listMessages', async (req, res) => {
 
     console.log('messages of ', id);
 
-    const messages = await Message.aggregate(messagesAggregation(id));
+    try {
+        const messages = await Message.aggregate(messagesAggregation(id));
 
-    const chats = await Chat.aggregate([
-        {
-            $match: {
-                from: ObjectId(id)
+        const chats = await Chat.aggregate([
+            {
+                $match: {
+                    from: ObjectId(id)
+                }
+            },
+            {
+                $sort: {
+                    date: -1
+                }
+            },
+        ]);
+
+        console.log('chats: ', chats);
+        console.log('messages: ', messages);
+
+        const preparedMessages = messages.map((m, idx) => {
+            const chat = m.chat[0];
+            const user = m.user[0];
+            const isUpdated = m.from.toString() !== id.toString() && chat.date < m.date;
+
+            return {
+                name: user.name,
+                text: m.text,
+                updated: isUpdated,
+                id: m._id,
+                avatarUrl: user.avatarUrl
             }
-        },
-        {
-            $sort: {
-                date: -1
-            }
-        },
-    ]);
+        });
 
-    console.log('chats: ', chats);
-    console.log('messages: ', messages);
-
-    const preparedMessages = messages.map((m, idx) => {
-        const chat = m.chat[0];
-        const user = m.user[0];
-        const isUpdated = m.from.toString() !== id.toString() && chat.date < m.date;
-
-        return {
-            name: user.name,
-            text: m.text,
-            updated: isUpdated,
-            id: m._id,
-            avatarUrl: user.avatarUrl
-        }
-    });
-
-    res.json({messages: preparedMessages});
+        res.json({messages: preparedMessages});
+    } catch (e) {
+        console.log(e);
+        res.status(500).end();
+    }
 });
 
 module.exports = router;

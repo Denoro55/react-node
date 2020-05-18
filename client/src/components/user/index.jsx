@@ -11,6 +11,7 @@ import ProfileMain from "./profile-main"
 import {getUserInfo} from "../../helpers"
 
 import './style.css'
+import Spinner from "../spinner";
 
 const User = (props) => {
     const {
@@ -28,6 +29,7 @@ const User = (props) => {
     const isOwner = !isUserPage;
 
     const [userData, setUserData] = useState({});
+    const [loading, setLoading] = useState(true);
 
     const [posts, setPosts] = useState([]);
     const [postsUI, setPostsUI] = useState([]);
@@ -40,9 +42,16 @@ const User = (props) => {
         }, {});
     };
 
+    const updatePosts = (posts) => {
+        setPostsUI(getPostsInterface(posts));
+        setPosts(posts);
+    };
+
     useEffect(() => {
         if (isUserPage) {
             // other pages
+
+            setLoading(true);
             apiService.getUserInfo(userPageId, user.id).then(res => {
                 const data = res.body.data;
                 const {postsCount, imagesCount} = getUserInfo(data.posts);
@@ -64,8 +73,10 @@ const User = (props) => {
 
                 setPostsUI(getPostsInterface(data.posts));
                 setPosts(data.posts);
+
+                setLoading(false);
             }).catch(e => {
-                console.log(e);
+                // console.log(e);
             })
         } else {
             // me
@@ -73,16 +84,17 @@ const User = (props) => {
                 ...userData,
                 avatarUrl: user.avatarUrl,
                 userName: user.name,
-                userId: user.id,
-                // followersCount: user.followersCount,
-                // followingCount: user.followingCount
+                userId: user.id
             });
 
+            setLoading(true);
+
             apiService.fetchPosts(user.id).then(res => {
-                setPostsUI(getPostsInterface(res.body.posts));
-                setPosts(res.body.posts);
+                updatePosts(res.body.posts);
+                setLoading(false);
             }).catch(e => {
-                console.log(e);
+                // console.log(e.message)
+                setLoading(false);
             })
         }
     }, []);
@@ -108,6 +120,8 @@ const User = (props) => {
                 followingCount: client.followingCount,
                 followersCount: client.followersCount
             });
+        }).catch(e => {
+
         })
     };
 
@@ -233,8 +247,15 @@ const User = (props) => {
                         </div>
                         <div className="profile__wall-left">
                             <div className="profile-wall">
-                                <div className="profile-wall__create">
-                                    <PostCreate apiService={apiService} user={props.user} wallId={userId} addPost={addPost} />
+                                <div className="profile-wall__top">
+                                    <div className="profile-wall__create">
+                                        <PostCreate apiService={apiService} user={props.user} wallId={userId} addPost={addPost} updatePosts={updatePosts} />
+                                    </div>
+                                    {
+                                        loading ? (
+                                            <Spinner />
+                                        ) : null
+                                    }
                                 </div>
                                 <ProfileWallList
                                     isOwner={isOwner}

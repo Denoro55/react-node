@@ -1,6 +1,9 @@
-import React from 'react';
-import {connect} from 'react-redux';
-import {withApiService} from '../hoc';
+import React from 'react'
+import {connect} from 'react-redux'
+import {withApiService} from '../hoc'
+import cn from 'classnames'
+
+import './style.css'
 
 class Register extends React.Component {
     state = {
@@ -10,7 +13,7 @@ class Register extends React.Component {
             password: ''
         },
         message: {
-            color: 'red',
+            ok: false,
             text: ''
         }
     };
@@ -18,20 +21,21 @@ class Register extends React.Component {
     register = (e) => {
         e.preventDefault();
         const {apiService} = this.props;
-        apiService.register(this.state.form).then(res => {
-            const color = !res.errors ? 'green' : 'red';
+        apiService.register(this.state.form).then(response => {
+            const res = response.body;
+
             if (res.errors) {
                 this.setState({
-                    message: {color, text: res.message}
+                    message: {ok: false, text: res.message}
                 });
             } else {
                 this.setState({
-                    message: {color, text: res.message},
+                    message: {ok: true, text: res.message},
                     form: {name: '', email: '', password: ''}
                 });
             }
         }).catch(e => {
-            console.log(e);
+            // console.log(e);
         })
     };
 
@@ -47,32 +51,41 @@ class Register extends React.Component {
     render() {
         const {message} = this.state;
 
+        const feedbackClasses = cn({
+            'form-feedback': true,
+            'good': this.state.message.ok
+        });
+
         const feedback = message.text ? (
-            <div className="mb-3" style={{color: message.color}}>
+            <div className={feedbackClasses}>
                 {message.text}
             </div>
         ) : null;
 
         return (
             <div className="container">
-                <div className="row">
-                    <div className="col-4">
-                        <h4 className="mb-4">Register</h4>
-                        <form onSubmit={this.register}>
-                            <div className="mb-3">
-                                <div className="form-group">
-                                    <input type="text" onChange={this.onInputChange} name="name" className="form-control" placeholder="Name" value={this.state.form.name} />
+                <div className="signup">
+                    <div className="row">
+                        <div className="col s4 offset-s4 center">
+                            <form className="form" onSubmit={this.register}>
+                                <div className="form__title">
+                                    Sign up
                                 </div>
-                                <div className="form-group">
-                                    <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" value={this.state.form.email} />
+                                <div className="form__body">
+                                    <div className="form-group">
+                                        <input type="text" onChange={this.onInputChange} name="name" className="form-control" placeholder="Name" value={this.state.form.name} />
+                                    </div>
+                                    <div className="form-group">
+                                        <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" value={this.state.form.email} />
+                                    </div>
+                                    <div className="form-group">
+                                        <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" value={this.state.form.password} />
+                                    </div>
                                 </div>
-                                <div className="form-group">
-                                    <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" value={this.state.form.password} />
-                                </div>
-                            </div>
-                            {feedback}
-                            <button type="submit" className="btn btn-primary">Register</button>
-                        </form>
+                                {feedback}
+                                <button type="submit" className="btn btn-primary">Sign up</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

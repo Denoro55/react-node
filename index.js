@@ -8,7 +8,7 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const sockets = require('./sockets');
 const config = require('config');
-const PORT = config.get('PORT');
+const PORT = process.env.PORT || config.get('PORT');
 
 app.use(cors());
 app.use(express.urlencoded({extended: true}));

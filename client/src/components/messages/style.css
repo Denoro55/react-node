@@ -17,33 +17,38 @@
     display: flex;
     flex: 1 1 auto; }
   .message-item__info {
-    padding-top: 5px; }
+    padding-top: 10px; }
   .message-item__avatar {
     margin-right: 15px;
     padding-top: 5px; }
     .message-item__avatar-icon {
-      width: 45px;
-      height: 45px;
+      width: 55px;
+      height: 55px;
       border-radius: 50%;
       background-color: #ddd;
       background-size: cover;
       background-position: center; }
   .message-item__actions {
+    width: 177px;
+    display: flex;
+    justify-content: flex-end;
     flex-shrink: 0;
     padding-left: 40px;
     margin-left: auto; }
+  .message-item__action {
+    margin-left: 15px; }
   .message-item__name {
     font-weight: 500;
-    margin-bottom: 5px; }
+    margin-bottom: 3px; }
   .message-item__text {
     font-size: 14px;
     color: #848484; }
 
 .collection-item {
-  padding: 15px 20px !important; }
+  padding: 14px 20px !important; }
 
 .chat__back {
-  margin-bottom: 20px; }
+  margin-bottom: 25px; }
 .chat__block {
   display: flex; }
 .chat__left {

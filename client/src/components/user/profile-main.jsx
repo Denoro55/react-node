@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react'
+import React, {useContext, useEffect, useRef, useState} from 'react'
 import {connect, useSelector} from "react-redux";
 import cn from "classnames";
 
@@ -50,6 +50,8 @@ const ProfileMain = (props) => {
             actionUpdateUserData({
                 avatarUrl: e.body.avatarUrl
             });
+        }).catch(e => {
+
         })
     };
 

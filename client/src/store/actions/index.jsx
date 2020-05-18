@@ -29,7 +29,7 @@ export const getUserData = (apiService, token) => () => (dispatch) => {
 
         return dispatch(actionGetUserDataSuccess(data));
     }).catch(err => {
-        console.log(err);
+        // console.log(err);
         dispatch(actionGetUserDataFailure());
     })
 };

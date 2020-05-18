@@ -22,6 +22,7 @@ import {addChatMessage} from "../../store/actions/chatActions";
 import {bindActionCreators} from "redux";
 
 import socket from "../../socket";
+import {getUserData} from "../../store/actions";
 
 class App extends React.Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -39,14 +40,16 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        const {apiService, updateMessageInList, addChatMessage} = this.props;
+        const {apiService, updateMessageInList, addChatMessage, getUserData} = this.props;
 
-        fetch('/api/test').then(res => {
-            console.log(res)
-        });
+        setInterval(() => {
+            getUserData(apiService, this.getUser().token);
+        }, 5000);
 
         // messages from me and others
         socket.on('getMessage', (data) => {
+            console.log('get data', data);
+
             const user = this.getUser();
             const {inChat, chatId} = this.props.chat;
             let mine = data.fromId.toString() === user.id.toString();
@@ -56,6 +59,8 @@ class App extends React.Component {
             // if mine
             if (mine) {
                 message.name = data.companion.name;
+                message.avatarUrl = data.companion.avatarUrl;
+
                 updateMessageInList({id: data.toId, updated: false, message, sort: true});
             }
 
@@ -112,11 +117,14 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-    return bindActionCreators({
-        updateMessageInList,
-        sortMessagesList,
-        addChatMessage
-    }, dispatch);
+    return {
+        getUserData: (apiSevice, token) => dispatch(getUserData(apiSevice, token)()),
+        ...bindActionCreators({
+            updateMessageInList,
+            sortMessagesList,
+            addChatMessage,
+        }, dispatch)
+    }
 };
 
 export default withApiService(connect(mapStateToProps, mapDispatchToProps)(App))

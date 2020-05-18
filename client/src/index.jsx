@@ -20,6 +20,7 @@ const token = localStorage.getItem('userData');
 apiService.setToken(token);
 
 // window.M.toast({html: 'I am a toast!'});
+console.log(process.env, process.env.CLIENT_SOCKET_PORT);
 
 // sockets
 socket.on('connect', function() {

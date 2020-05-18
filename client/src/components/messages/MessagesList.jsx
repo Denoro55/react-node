@@ -26,13 +26,17 @@ const MessagesList = (props) => {
                             </div>
                             <div className="message-item__actions">
                                 {item.updated ? (
-                                    <button onClick={() => openChat(item.id)} className="btn btn-outline btn-danger btn-sm">
-                                        <i className="fa fa-envelope-open" />
-                                    </button>
+                                    <div className="message-item__action">
+                                        <button onClick={() => openChat(item.id)} className="btn btn-outline btn-danger btn-sm">
+                                            <i className="fa fa-envelope-open" />
+                                        </button>
+                                    </div>
                                 ) : null}
-                                <button onClick={() => openChat(item.id)} className="btn btn-outline btn-success btn-sm ml-3">
-                                    <i className="fa fa-weixin" />
-                                </button>
+                                <div className="message-item__action">
+                                    <button onClick={() => openChat(item.id)} className="btn btn-outline btn-success btn-sm">
+                                        <i className="fa fa-weixin" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </li>

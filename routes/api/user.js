@@ -49,7 +49,7 @@ router.post('/userInfo', authMiddleware, async (req, res) => {
 
     } catch (e) {
         console.log(e);
-        res.status(404).json({ok: false})
+        res.status(404).end();
     }
 });
 
@@ -67,91 +67,101 @@ router.post('/follow', authMiddleware, async (req, res) => {
         }
     };
 
-    if (!isFollowing) {
-        const client = await User.findOneAndUpdate(
-            {
-                _id: ObjectId(followerId),
-                following: { "$ne": ObjectId(followingId) }
-            },
-            {
-                "$push": { "following": ObjectId(followingId) }
-            },
-            {
-                new: true
-            }
-        );
+    try {
+        if (!isFollowing) {
+            const client = await User.findOneAndUpdate(
+                {
+                    _id: ObjectId(followerId),
+                    following: { "$ne": ObjectId(followingId) }
+                },
+                {
+                    "$push": { "following": ObjectId(followingId) }
+                },
+                {
+                    new: true
+                }
+            );
 
-        if (!client) {
-            return res.status(429).json({ ok: false });
+            if (!client) {
+                return res.status(429).end();
+            }
+
+            response.client.followersCount = client.followers.length;
+            response.client.followingCount = client.following.length;
+
+            const user = await User.findOneAndUpdate(
+                {
+                    _id: ObjectId(followingId),
+                    followers: { "$ne": ObjectId(followerId) }
+                },
+                {
+                    "$push": { "followers": ObjectId(followerId) }
+                },
+                {
+                    new: true
+                }
+            );
+
+            response.user.followersCount = user.followers.length;
+            response.user.followingCount = user.following.length;
+        } else {
+            const client = await User.findOneAndUpdate(
+                {
+                    _id: ObjectId(followerId),
+                    following: ObjectId(followingId)
+                },
+                {
+                    "$pull": { "following": ObjectId(followingId) }
+                },
+                {
+                    new: true
+                }
+            );
+
+            if (!client) {
+                return res.status(429).end();
+            }
+
+            response.client.followersCount = client.followers.length;
+            response.client.followingCount = client.following.length;
+
+            const user = await User.findOneAndUpdate(
+                {
+                    _id: ObjectId(followingId),
+                    followers: ObjectId(followerId)
+                },
+                {
+                    "$pull": { "followers": ObjectId(followerId) }
+                },
+                {
+                    new: true
+                }
+            );
+
+            response.user.followersCount = user.followers.length;
+            response.user.followingCount = user.following.length;
         }
 
-        response.client.followersCount = client.followers.length;
-        response.client.followingCount = client.following.length;
+        res.json({ ok: true, isFollowing: !isFollowing, ...response });
 
-        const user = await User.findOneAndUpdate(
-            {
-                _id: ObjectId(followingId),
-                followers: { "$ne": ObjectId(followerId) }
-            },
-            {
-                "$push": { "followers": ObjectId(followerId) }
-            },
-            {
-                new: true
-            }
-        );
-
-        response.user.followersCount = user.followers.length;
-        response.user.followingCount = user.following.length;
-    } else {
-        const client = await User.findOneAndUpdate(
-            {
-                _id: ObjectId(followerId),
-                following: ObjectId(followingId)
-            },
-            {
-                "$pull": { "following": ObjectId(followingId) }
-            },
-            {
-                new: true
-            }
-        );
-
-        if (!client) {
-            return res.status(429).json({ ok: false });
-        }
-
-        response.client.followersCount = client.followers.length;
-        response.client.followingCount = client.following.length;
-
-        const user = await User.findOneAndUpdate(
-            {
-                _id: ObjectId(followingId),
-                followers: ObjectId(followerId)
-            },
-            {
-                "$pull": { "followers": ObjectId(followerId) }
-            },
-            {
-                new: true
-            }
-        );
-
-        response.user.followersCount = user.followers.length;
-        response.user.followingCount = user.following.length;
+    } catch (e) {
+        res.status(500).end();
     }
-
-    res.json({ ok: true, isFollowing: !isFollowing, ...response });
 });
 
 router.post('/uploadAvatar', authMiddleware, fileMiddleware.single('avatar'), async (req, res) => {
     console.log('file is ', req.file);
-    const filename = req.file.filename;
 
-    const user = await User.findOne({_id: req.body.id});
-    await user.updateOne({avatarUrl: filename});
+    try {
+        const filename = req.file.filename;
 
-    res.json({avatarUrl: filename});
+        const user = await User.findOne({_id: req.body.id});
+        await user.updateOne({avatarUrl: filename});
+
+        res.json({avatarUrl: filename});
+    } catch (e) {
+        res.status(500).end();
+    }
 });
 
 router.post('/followers', async (req, res) => {
@@ -186,6 +196,7 @@ router.post('/followers', async (req, res) => {
 
     } catch (e) {
         console.log(e);
+        res.status(500).end();
     }
 });
 
@@ -221,18 +232,28 @@ router.post('/following', async (req, res) => {
 
     } catch (e) {
         console.log(e);
+        res.status(500).end();
     }
 });
 
-router.post('/users', async (req, res) => {
+router.post('/users', authMiddleware, async (req, res) => {
     const {match} = req.body;
 
     try {
-        const users = await User.find({
-            name: {
-                $regex: new RegExp(`${match}`, 'i')
+        const users = await User.aggregate([
+            {
+                $match: {
+                    name: {
+                        $regex: new RegExp(`${match}`, 'i')
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    isFollowing: { $in: [ ObjectId(req.user.userId), '$followers' ] }
+                }
             }
-        });
+        ]);
 
         const preparedUsers = users.map(user => {
             return {
@@ -249,6 +270,7 @@ router.post('/users', async (req, res) => {
         res.json({ok: true, users: preparedUsers});
     } catch (e) {
         console.log(e);
+        res.status(500).end();
     }
 });
 

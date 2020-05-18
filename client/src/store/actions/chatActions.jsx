@@ -2,12 +2,15 @@ import {updateMessageInList} from "./messageActions";
 
 export const fetchChatMessagesRequest = () => ({type: 'FETCH_CHAT'});
 export const fetchChatSuccess = (payload) => ({type: 'FETCH_CHAT_SUCCESS', payload});
+export const fetchChatFailure = () => ({type: 'FETCH_CHAT_FAILURE'});
 export const fetchChat = (apiService) => (id, receiverId) => (dispatch) => {
     dispatch(fetchChatMessagesRequest());
 
     return apiService.getChatMessages(id, receiverId).then(res => {
         dispatch(fetchChatSuccess(res.body));
         dispatch(updateMessageInList({id: receiverId, updated: false, sort: false}));
+    }).catch(e => {
+        dispatch(fetchChatFailure());
     })
 };
 
@@ -16,15 +19,5 @@ export const addChatMessage = ({name, text}) => ({type: 'CHAT_MESSAGE_ADD', payl
 
 export const actionSendMessage = (apiService) => (companion, user, message, date) => (dispatch) => {
     const receiverId = companion.id;
-
-    // const params = {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'Authorization': `Bearer ${user.token}`
-    //     },
-    //     body: JSON.stringify({id: receiverId, senderId: user.id, message, companion, date})
-    // };
-
     return apiService.sendMessage(receiverId, user.id, message, companion, date);
 };

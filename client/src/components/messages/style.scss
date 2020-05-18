@@ -27,7 +27,7 @@
     }
 
     &__info {
-        padding-top: 5px;
+        padding-top: 10px;
     }
 
     &__avatar {
@@ -35,8 +35,8 @@
         padding-top: 5px;
 
         &-icon {
-            width: 45px;
-            height: 45px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             background-color: #ddd;
             background-size: cover;
@@ -45,14 +45,21 @@
     }
 
     &__actions {
+        width: 177px;
+        display: flex;
+        justify-content: flex-end;
         flex-shrink: 0;
         padding-left: 40px;
         margin-left: auto;
     }
 
+    &__action {
+        margin-left: 15px;
+    }
+
     &__name {
         font-weight: 500;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
     }
 
     &__text {
@@ -62,13 +69,13 @@
 }
 
 .collection-item {
-    padding: 15px 20px !important;
+    padding: 14px 20px !important;
 }
 
 // chat
 .chat {
     &__back {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
 
     &__block {

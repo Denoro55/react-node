@@ -20,6 +20,8 @@ const Users = (props) => {
         fetchFunc(user.id).then(res => {
             setUsers(res.body.users);
             setLoading(false);
+        }).catch((e) => {
+
         })
     };
 

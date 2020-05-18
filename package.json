@@ -7,8 +7,10 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "client": "npm run start --prefix ./client",
         "server": "cross-env NODE_ENV=development nodemon ./index.js",
-        "start": "cross-env NODE_ENV=production nodemon ./index.js",
-        "dev": "concurrently \"npm run server\" \"npm run client\""
+        "start": "cross-env NODE_ENV=production node ./index.js",
+        "dev": "concurrently \"npm run server\" \"npm run client\"",
+        "build": "npm run build --prefix ./client",
+        "heroku-postbuild": "ng build --prod"
     },
     "keywords": [],
     "author": "",

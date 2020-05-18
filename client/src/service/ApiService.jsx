@@ -6,17 +6,14 @@ class ApiService {
 
     getRequest(url, params = {}) {
         return new Promise((resolve, reject) => {
-            // fetch(`${this.URL}${url}`, params).then(res => {
-            //     if (res.status === 401) reject(new UnauthorizedError());
-            //     return res.json();
-            // }).then(res => resolve(res));
-
             fetch(`${this.URL}${url}`, params)
-                .then(r =>  r.json().then(data => ({status: r.status, body: data})))
+                .then(r =>  r.json().then(data => ({status: r.status, body: data})) )
                 .then(res => {
                     if (res.status === 401) reject(new UnauthorizedError());
                     resolve(res);
-                });
+                }).catch(e => {
+                    reject(e);
+                })
         });
     }
 
@@ -54,27 +51,7 @@ class ApiService {
         });
     }
 
-    createPost(formData) {
-        return this.getRequest('createPost', {
-            method: 'POST',
-            headers: {
-                'Authorization': this.getToken()
-            },
-            body: formData
-        });
-    }
-
-    createComment(userId, postId, text) {
-        return this.getRequest('postComment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': this.getToken()
-            },
-            body: JSON.stringify({userId, postId, text})
-        });
-    }
-
+    // posts
     fetchPosts(id) {
         return this.getRequest('posts', {
             method: 'POST',
@@ -86,6 +63,16 @@ class ApiService {
         });
     }
 
+    createPost(formData) {
+        return this.getRequest('createPost', {
+            method: 'POST',
+            headers: {
+                'Authorization': this.getToken()
+            },
+            body: formData
+        });
+    }
+
     removePost(id) {
         return this.getRequest('posts', {
             method: 'DELETE',
@@ -94,6 +81,42 @@ class ApiService {
                 'Authorization': this.getToken()
             },
             body: JSON.stringify({id})
+        });
+    }
+
+    likePost(userId, postId, isLiked) {
+        const token = this.getToken();
+
+        return this.getRequest('postLike', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({userId, postId, like: isLiked})
+        });
+    }
+
+    // comments
+    createComment(userId, postId, text) {
+        return this.getRequest('createComment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({userId, postId, text})
+        });
+    }
+
+    likeComment(userId, commentId, isLiked) {
+        return this.getRequest('likeComment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.getToken()
+            },
+            body: JSON.stringify({userId, commentId, like: isLiked})
         });
     }
 
@@ -159,30 +182,6 @@ class ApiService {
                 'Authorization': token
             },
             body: JSON.stringify({id, clientId})
-        });
-    }
-
-    likePost(userId, postId, isLiked) {
-        const token = this.getToken();
-
-        return this.getRequest('postLike', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            },
-            body: JSON.stringify({userId, postId, like: isLiked})
-        });
-    }
-
-    likeComment(userId, commentId, isLiked) {
-        return this.getRequest('likeComment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': this.getToken()
-            },
-            body: JSON.stringify({userId, commentId, like: isLiked})
         });
     }
 

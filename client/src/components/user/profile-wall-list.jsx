@@ -11,6 +11,8 @@ const ProfileWallList = (props) => {
         if (text) {
             apiService.createComment(user.id, postId, text).then((res) => {
                 updatePostComments(postId, res.body.comments);
+            }).catch(e => {
+                // console.log(e.message)
             });
             e.target.reset();
         }
@@ -19,6 +21,8 @@ const ProfileWallList = (props) => {
     const removePost = (id) => {
         apiService.removePost(id).then((res) => {
             removePostById(id);
+        }).catch(e => {
+            // console.log(e.message)
         })
     };
 
@@ -28,6 +32,8 @@ const ProfileWallList = (props) => {
                 const { post } = res.body;
                 updatePostLikes(post);
             }
+        }).catch(e => {
+            // console.log(e.message)
         })
     };
 
@@ -37,6 +43,8 @@ const ProfileWallList = (props) => {
                 const { comment } = res.body;
                 updateCommentLikes(postId, comment);
             }
+        }).catch(e => {
+            console.log(e.message)
         })
     };
 

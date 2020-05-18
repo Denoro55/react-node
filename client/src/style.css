@@ -47,4 +47,18 @@ textarea {
   left: 4%;
   bottom: 9%; }
 
+.form__title {
+  font-size: 26px;
+  margin-bottom: 20px; }
+.form__body {
+  margin-bottom: 30px; }
+
+.form-feedback {
+  margin-bottom: 25px;
+  color: #ff3636;
+  font-weight: 500; }
+
+.form-feedback.good {
+  color: #37b105; }
+
 /*# sourceMappingURL=style.css.map */

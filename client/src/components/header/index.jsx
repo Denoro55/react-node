@@ -29,7 +29,7 @@ const Header = ({isAuthenticated, actionUnauthorize, user}) => {
                         <NavLink activeClassName='active' className="nav-link ml-auto" to="/login">Login</NavLink>
                     </li>
                     <li className="nav-item">
-                        <NavLink activeClassName='active' className="nav-link ml-2" to="/register">Register</NavLink>
+                        <NavLink activeClassName='active' className="nav-link ml-2" to="/register">Sign up</NavLink>
                     </li>
                 </ul>
             )
@@ -57,7 +57,7 @@ const Header = ({isAuthenticated, actionUnauthorize, user}) => {
                                 <ul id="nav-mobile" className="left hide-on-med-and-down">
                                     {
                                         items.map((link, idx) => {
-                                            if (!isAuthenticated && link.isAuth) {
+                                            if ((!isAuthenticated && link.isAuth) || (isAuthenticated && !link.isAuth)) {
                                                 return null;
                                             }
 
@@ -75,32 +75,6 @@ const Header = ({isAuthenticated, actionUnauthorize, user}) => {
                     </div>
                 </div>
             </nav>
-            {/*<nav className="navbar navbar-expand-lg navbar-dark bg-dark">*/}
-            {/*    <Link className="navbar-brand" to="/">Art's Store</Link>*/}
-            {/*    <ul className="navbar-nav ml-3 mr-auto">*/}
-            {/*        {*/}
-            {/*            items.map((link, idx) => {*/}
-            {/*                if (!isAuthenticated && link.isAuth) {*/}
-            {/*                    return null;*/}
-            {/*                }*/}
-
-            {/*                return (*/}
-            {/*                    <li key={idx} className="nav-item">*/}
-            {/*                        <NavLink activeClassName='active' className="nav-link" exact={link.exact} to={link.to}>{link.name}</NavLink>*/}
-            {/*                    </li>*/}
-            {/*                )*/}
-            {/*            })*/}
-            {/*        }*/}
-
-            {/*        /!*<li className="nav-item ml-1">*!/*/}
-            {/*        /!*    <NavLink activeClassName='active' className="nav-link" to="/cart">Cart</NavLink>*!/*/}
-            {/*        /!*</li>*!/*/}
-            {/*        /!*<li className="nav-item ml-1">*!/*/}
-            {/*        /!*    <NavLink activeClassName='active' className="nav-link" to="/test">Test</NavLink>*!/*/}
-            {/*        /!*</li>*!/*/}
-            {/*    </ul>*/}
-            {/*    { renderRight() }*/}
-            {/*</nav>*/}
         </header>
     )
 };

@@ -3,7 +3,7 @@ const initialState = {
     messages: []
 };
 
-const createMessage = (name, text, id, updated) => ({name, text, id, updated});
+const createMessage = (name, text, id, avatarUrl, updated) => ({name, text, id, avatarUrl, updated});
 
 const messagesReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -19,6 +19,12 @@ const messagesReducer = (state = initialState, action) => {
                 messages: action.payload
             };
 
+        case 'FETCH_MESSAGES_FAILURE':
+            return {
+                loading: false,
+                messages: [...state.messages]
+            };
+
         case 'MESSAGE_UPDATE': {
             const {id, updated, message, sort = true} = action.payload;
 
@@ -29,12 +35,13 @@ const messagesReducer = (state = initialState, action) => {
                 // отсортировать и создать, если нет собеседника в списке
                 let name = message.name;
                 let text = message.text;
+                let avatarUrl = message.avatarUrl;
 
                 if (index >= 0) {
                     name = updatedMessages[index].name;
                     updatedMessages = updatedMessages.filter(m => m.id !== id);
                 }
-                updatedMessages.unshift(createMessage(name, text, id, updated));
+                updatedMessages.unshift(createMessage(name, text, id, avatarUrl, updated));
             } else {
                 if (index >= 0) {
                     updatedMessages[index].updated = updated;
@@ -46,50 +53,6 @@ const messagesReducer = (state = initialState, action) => {
                 messages: updatedMessages
             };
         }
-
-        // case 'MESSAGE_STATUS_UPDATE': {
-        //     const id = action.payload.id;
-        //     const updated = action.payload.updated;
-        //     const message = action.payload.message;
-        //
-        //     const updatedMessages = [...state.messages];
-        //     const index = updatedMessages.findIndex(m => m.id === id);
-        //     if (index < 0) {
-        //         if (!message) {
-        //             return state;
-        //         } else {
-        //             updatedMessages.unshift({...message, updated: true});
-        //             return {
-        //                 ...state,
-        //                 messages: updatedMessages
-        //             };
-        //         }
-        //     }
-        //
-        //     updatedMessages[index].updated = updated;
-        //
-        //     return {
-        //         ...state,
-        //         messages: updatedMessages
-        //     };
-        // }
-
-        // case 'MESSAGES_LIST_SORT': {
-        //     const id = action.payload;
-        //
-        //     const updatedMessages = [...state.messages];
-        //     const index = updatedMessages.findIndex(m => m.id === id);
-        //     if (index < 0) return state;
-        //
-        //     const thisItem = updatedMessages[index];
-        //     const newMessagesList = updatedMessages.filter(m => m.id !== id);
-        //     newMessagesList.unshift(thisItem);
-        //
-        //     return {
-        //         ...state,
-        //         messages: newMessagesList
-        //     };
-        // }
 
         case 'MESSAGES_LIST_UPDATE':
             return {

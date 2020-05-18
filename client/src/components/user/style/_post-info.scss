@@ -11,4 +11,5 @@
 
 .post-comments-button, .post-likes-button {
     cursor: pointer;
+    user-select: none;
 }

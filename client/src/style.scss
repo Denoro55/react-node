@@ -66,3 +66,26 @@ textarea {
     left: 4%;
     bottom: 9%;
 }
+
+// form
+
+.form {
+    &__title {
+        font-size: 26px;
+        margin-bottom: 20px;
+    }
+
+    &__body {
+        margin-bottom: 30px;
+    }
+}
+
+.form-feedback {
+    margin-bottom: 25px;
+    color: #ff3636;
+    font-weight: 500;
+}
+
+.form-feedback.good {
+    color: $color_green_light;
+}

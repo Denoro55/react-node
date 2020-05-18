@@ -37,6 +37,8 @@ class Login extends React.Component {
                     });
                 }
             }
+        }).catch(e => {
+
         })
     };
 
@@ -53,30 +55,52 @@ class Login extends React.Component {
         const {message} = this.state;
 
         const feedback = message.text ? (
-            <div className="mb-3" style={{color: message.color}}>
+            <div className="form-feedback">
                 {message.text}
             </div>
         ) : null;
 
         return (
             <div className="container">
-                <div className="row">
-                    <div className="col-4">
-                        <h4 className="mb-4">Login</h4>
-                        <form onSubmit={this.login}>
-                            <div className="mb-3">
-                                <div className="form-group">
-                                    <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" />
+                <div className="signup">
+                    <div className="row">
+                        <div className="col s4 offset-s4 center">
+                            <form className="form" onSubmit={this.login}>
+                                <div className="form__title">
+                                    Login
                                 </div>
-                                <div className="form-group">
-                                    <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" />
+                                <div className="form__body">
+                                    <div className="form-group">
+                                        <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" />
+                                    </div>
+                                    <div className="form-group">
+                                        <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" />
+                                    </div>
                                 </div>
-                            </div>
-                            {feedback}
-                            <button type="submit" className="btn btn-primary">Sign in</button>
-                        </form>
+                                {feedback}
+                                <button type="submit" className="btn btn-primary">Sign in</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+
+                {/*<div className="row">*/}
+                {/*    <div className="col-4">*/}
+                {/*        <div className="mb-4">Login</div>*/}
+                {/*        <form onSubmit={this.login}>*/}
+                {/*            <div className="mb-3">*/}
+                {/*                <div className="form-group">*/}
+                {/*                    <input type="text" onChange={this.onInputChange} name="email" className="form-control" placeholder="Email" />*/}
+                {/*                </div>*/}
+                {/*                <div className="form-group">*/}
+                {/*                    <input type="password" onChange={this.onInputChange} name="password" className="form-control" placeholder="Password" />*/}
+                {/*                </div>*/}
+                {/*            </div>*/}
+                {/*            {feedback}*/}
+                {/*            <button type="submit" className="btn btn-primary">Sign in</button>*/}
+                {/*        </form>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
             </div>
         )
     }

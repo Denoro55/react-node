@@ -15,6 +15,7 @@ const Search = (props) => {
 
     const [result, setResult] = useState('');
     const [match, setMatch] = useState('');
+
     const fetchFunc = useCallback(() => {
         return apiService.fetchUsers(result);
     }, [result]);

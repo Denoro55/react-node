@@ -29,10 +29,12 @@ const UserCard = (props) => {
     const follow = (cardId) => {
         apiService.follow(_id, cardId, isFollowing).then(res => {
             if (res.body.ok) {
-                const { isFollowing, client } = res.body;
+                const { isFollowing, client, user: {followingCount, followersCount} } = res.body;
 
                 updateUser(cardId, {
-                    isFollowing
+                    isFollowing,
+                    followingCount,
+                    followersCount
                 });
 
                 actionUpdateUserData({
@@ -58,13 +60,21 @@ const UserCard = (props) => {
                 </div>
             </div>
             <div className="user-card__actions">
-                <div onClick={() => follow(_cardId)} className="user-card__action link-yellow">
-                    {
-                        isFollowing ? 'Unfollow' : 'Follow'
-                    }
-                </div>
+                {
+                    _id !== _cardId ? (
+                        <div onClick={() => follow(_cardId)} className="user-card__action link-yellow">
+                            {
+                                isFollowing ? 'Unfollow' : 'Follow'
+                            }
+                        </div>
+                    ) : null
+                }
                 <NavLink className="user-card__action link-yellow" to={`/user/${_cardId}`}>Page</NavLink>
-                <NavLink className="user-card__action link-yellow" to={`/messages/?chat=${_cardId}`}>Message</NavLink>
+                {
+                    _id !== _cardId ? (
+                        <NavLink className="user-card__action link-yellow" to={`/messages/?chat=${_cardId}`}>Message</NavLink>
+                    ) : null
+                }
             </div>
             <div className="user-card__info">
                 <div className="user-card__info-item">

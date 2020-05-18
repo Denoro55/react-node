@@ -2,7 +2,7 @@ import React, {useRef, useState} from "react";
 import cn from 'classnames'
 
 const PostCreate = (props) => {
-    const {apiService, user, addPost, wallId} = props;
+    const {apiService, user, addPost, updatePosts, wallId} = props;
 
     const [postText, setPostText] = useState('');
     const [postImageSrc, setPostImageSrc] = useState(null);
@@ -62,7 +62,10 @@ const PostCreate = (props) => {
 
             apiService.createPost(data).then(res => {
                 resetForm();
-                addPost(res.body.post);
+                updatePosts(res.body.posts);
+                // addPost(res.body.post);
+            }).catch(e => {
+
             })
         }
     };

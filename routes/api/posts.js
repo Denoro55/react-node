@@ -19,240 +19,288 @@ const preparePosts = require('../../utils/preparePosts');
 router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async (req, res) => {
     const {id, wallId, text} = req.body;
 
-    const user = await User.findOne({_id: id});
-    let filename;
+    try {
+        if (req.user.userId.toString() !== id.toString()) {
+            return res.status(401).json({message: 'Unauthorized'});
+        }
 
-    if (req.file) {
-        filename = req.file.filename;
+        let filename;
+        const user = await User.findOne({_id: id});
+        const wallOwner = await User.findOne({_id: wallId});
+
+        if (req.file) {
+            filename = req.file.filename;
+        }
+
+        const post = new Post({
+            wallOwner: ObjectId(wallId),
+            owner: id,
+            text: text,
+            imageUrl: filename,
+            date: Date.now()
+        });
+
+        await post.save();
+
+        await wallOwner.updateOne({
+            "$push": { "posts": ObjectId(post._id) }
+        });
+
+        const {_doc: {owner, ...rest}} = post;
+
+        const preparedPost = {
+            ...rest,
+            user: {
+                name: user.name
+            },
+            time: timeSince(post.date)
+        };
+
+        const posts = await Post.aggregate(postsAggregations(wallId));
+        const preparedPosts = preparePosts(posts);
+
+        res.json({ post: preparedPost, posts: preparedPosts });
+    } catch (e) {
+        res.status(500).end();
     }
-
-    const post = new Post({
-        wallOwner: ObjectId(wallId),
-        owner: user,
-        text: text,
-        imageUrl: filename,
-        date: Date.now()
-    });
-
-    await post.save();
-
-    await user.updateOne({
-        "$push": { "posts": ObjectId(post._id) }
-    });
-
-    const {_doc: {owner, ...rest}} = post;
-
-    const preparedPost = {
-        ...rest,
-        user: {
-            name: user.name
-        },
-        time: timeSince(post.date)
-    };
-
-    res.json({post: preparedPost});
 });
 
 router.post('/posts', authMiddleware, async (req, res) => {
     const userId = req.body.id;
 
-    const posts = await Post.aggregate(postsAggregations(userId));
-    const preparedPosts = preparePosts(posts);
+    try {
+        const posts = await Post.aggregate(postsAggregations(userId));
+        const preparedPosts = preparePosts(posts);
 
-    res.json({ posts: preparedPosts })
+        res.json({ posts: preparedPosts })
+    } catch (e) {
+        res.status(500).end();
+    }
 });
 
 router.delete('/posts', authMiddleware, async (req, res) => {
-    const post = await Post.findOne({_id: req.body.id});
-    await post.remove();
+    const {id} = req.body;
+    const {userId} = req.user;
 
-    res.json({ok: true});
+    try {
+        const post = await Post.findOne({
+            _id: id,
+            $or: [
+                { owner: userId },
+                { wallOwner: userId }
+            ]
+        });
+
+        if (post) {
+            await post.remove();
+            await Comment.deleteMany({postId: id});
+
+            await User.findOneAndUpdate(
+                {
+                    "_id": ObjectId(userId),
+                    "posts": ObjectId(id)
+                },
+                {
+                    "$pull": { "posts": ObjectId(id) }
+                },
+            );
+        } else {
+            return res.status(500).end();
+        }
+
+        res.json({ok: true});
+    } catch (e) {
+        console.log(e);
+        res.status(500).end();
+    }
 });
 
 router.post('/postLike', authMiddleware, async (req, res) => {
     const {userId, postId, like} = req.body;
 
-    if (!like) {
-        // like
-        await Post.findOneAndUpdate(
-            {
-                "_id": ObjectId(postId),
-                "likes": { "$ne": ObjectId(userId) }
-            },
-            {
-                "$inc": { "likesCount": 1 },
-                "$push": { "likes": ObjectId(userId) }
-            },
-            {new: true}
-        )
-        .populate('owner', 'name')
-        .exec(function(err, post) {
-            if (err) throw err;
+    try {
+        if (!like) {
+            // like
+            await Post.findOneAndUpdate(
+                {
+                    "_id": ObjectId(postId),
+                    "likes": { "$ne": ObjectId(userId) }
+                },
+                {
+                    "$inc": { "likesCount": 1 },
+                    "$push": { "likes": ObjectId(userId) }
+                },
+                {new: true}
+            )
+                .populate('owner', 'name')
+                .exec(function(err, post) {
+                    if (err) throw err;
 
-            if (!post) {
-                return res.status(429).json({ok: false});
-            }
+                    if (!post) {
+                        return res.status(429).end();
+                    }
 
-            const data = {
-                _id: postId,
-                isLiked: true,
-                likesCount: post._doc.likes.length
-            };
+                    const data = {
+                        _id: postId,
+                        isLiked: true,
+                        likesCount: post._doc.likes.length
+                    };
 
-            res.json({ok: true, post: data})
-        })
-    } else {
-        // dislike
-        await Post.findOneAndUpdate(
-            {
-                "_id": ObjectId(postId),
-                "likes": ObjectId(userId)
-            },
-            {
-                "$inc": { "likesCount": -1 },
-                "$pull": { "likes": ObjectId(userId) }
-            },
-            {new: true}
-        )
-        .populate('owner', 'name')
-        .exec(function(err, post) {
-            if (err) throw err;
+                    res.json({ok: true, post: data})
+                })
+        } else {
+            // dislike
+            await Post.findOneAndUpdate(
+                {
+                    "_id": ObjectId(postId),
+                    "likes": ObjectId(userId)
+                },
+                {
+                    "$inc": { "likesCount": -1 },
+                    "$pull": { "likes": ObjectId(userId) }
+                },
+                {new: true}
+            )
+                .populate('owner', 'name')
+                .exec(function(err, post) {
+                    if (err) throw err;
 
-            if (!post) {
-                return res.status(429).json({ok: false});
-            }
+                    if (!post) {
+                        return res.status(429).end();
+                    }
 
-            const data = {
-                _id: postId,
-                isLiked: false,
-                likesCount: post._doc.likes.length
-            };
+                    const data = {
+                        _id: postId,
+                        isLiked: false,
+                        likesCount: post._doc.likes.length
+                    };
 
-            return res.json({ok: true, post: data})
-        })
+                    return res.json({ok: true, post: data})
+                })
+        }
+    } catch (e) {
+        res.status(500).end();
     }
 });
 
 router.post('/likeComment', authMiddleware, async (req, res) => {
     const {userId, commentId, like} = req.body;
 
-    if (!like) {
-        // like
-        await Comment.findOneAndUpdate(
-            {
-                "_id": ObjectId(commentId),
-                "likes": { "$ne": ObjectId(userId) }
-            },
-            {
-                // "$inc": { "likesCount": 1 },
-                "$push": { "likes": ObjectId(userId) }
-            },
-            {new: true}
-        )
-        .exec(function(err, comment) {
-            if (err) throw err;
+    try {
+        if (!like) {
+            // like
+            await Comment.findOneAndUpdate(
+                {
+                    "_id": ObjectId(commentId),
+                    "likes": { "$ne": ObjectId(userId) }
+                },
+                {
+                    // "$inc": { "likesCount": 1 },
+                    "$push": { "likes": ObjectId(userId) }
+                },
+                {new: true}
+            )
+                .exec(function(err, comment) {
+                    if (err) throw err;
 
-            if (!comment) {
-                return res.status(429).json({ok: false});
-            }
+                    if (!comment) {
+                        return res.status(429).end()
+                    }
 
-            const response = {
-                _id: comment._id,
-                likesCount: comment.likes.length,
-                isLiked: true
-            };
+                    const response = {
+                        _id: comment._id,
+                        likesCount: comment.likes.length,
+                        isLiked: true
+                    };
 
-            return res.json({ok: true, comment: response})
-        })
-    } else {
-        // dislike
-        await Comment.findOneAndUpdate(
-            {
-                "_id": ObjectId(commentId),
-                "likes": ObjectId(userId)
-            },
-            {
-                // "$inc": { "likesCount": -1 },
-                "$pull": { "likes": ObjectId(userId) }
-            },
-            {new: true}
-        )
-        .exec(function(err, comment) {
-            if (err) throw err;
+                    return res.json({ok: true, comment: response})
+                })
+        } else {
+            // dislike
+            await Comment.findOneAndUpdate(
+                {
+                    "_id": ObjectId(commentId),
+                    "likes": ObjectId(userId)
+                },
+                {
+                    // "$inc": { "likesCount": -1 },
+                    "$pull": { "likes": ObjectId(userId) }
+                },
+                {new: true}
+            )
+                .exec(function(err, comment) {
+                    if (err) throw err;
 
-            if (!comment) {
-                return res.status(429).json({ok: false});
-            }
+                    if (!comment) {
+                        return res.status(429).end()
+                    }
 
-            const response = {
-                _id: comment._id,
-                likesCount: comment.likes.length,
-                isLiked: false
-            };
+                    const response = {
+                        _id: comment._id,
+                        likesCount: comment.likes.length,
+                        isLiked: false
+                    };
 
-            return res.json({ok: true, comment: response})
-        })
+                    return res.json({ok: true, comment: response})
+                })
+        }
+    } catch (e) {
+        res.status(500).end();
     }
 });
 
-router.post('/postComment', authMiddleware, async (req, res) => {
+router.post('/createComment', authMiddleware, async (req, res) => {
     const {userId, postId, text} = req.body;
 
-    const comment = new Comment({
-        userId: ObjectId(userId),
-        postId: ObjectId(postId),
-        text,
-        date: Date.now()
-    });
+    try {
+        const comment = new Comment({
+            userId: ObjectId(userId),
+            postId: ObjectId(postId),
+            text,
+            date: Date.now()
+        });
 
-    await comment.save(async function(err, c) {
-        if (err) return res.json({ok: false});
+        await comment.save(async function(err, c) {
+            if (err) return res.json({ok: false});
 
-        const commentId = c._id;
+            const commentId = c._id;
 
-        await Post.findOneAndUpdate(
-            {
-                "_id": ObjectId(postId)
-            },
-            {
-                "$push": { "comments": ObjectId(commentId) }
-            },
-            {new: true}
-        );
+            await Post.findOneAndUpdate(
+                {
+                    "_id": ObjectId(postId)
+                },
+                {
+                    "$push": { "comments": ObjectId(commentId) }
+                },
+                {new: true}
+            );
 
-        const comments = await Comment.aggregate([
-            {
-                $match: {
-                    postId: ObjectId(postId)
-                }
-            },
-            { $lookup: {
-                "from": "users",
-                "localField": "userId",
-                "foreignField": "_id",
-                "as": "user"
-            }},
-            {
-                $addFields: {
-                    isLiked: { $in: [ ObjectId(userId), '$likes' ] }
-                }
-            },
-        ]);
+            const comments = await Comment.aggregate([
+                {
+                    $match: {
+                        postId: ObjectId(postId)
+                    }
+                },
+                { $lookup: {
+                        "from": "users",
+                        "localField": "userId",
+                        "foreignField": "_id",
+                        "as": "user"
+                    }},
+                {
+                    $addFields: {
+                        isLiked: { $in: [ ObjectId(userId), '$likes' ] }
+                    }
+                },
+            ]);
 
-        const preparedComments = prepareComments(comments, (c) => c);
+            const preparedComments = prepareComments(comments, (c) => c);
 
-        // const preparedComments = comments.map(c => {
-        //     const {name, avatarUrl} = c.user[0];
-        //
-        //     return {
-        //         ...c,
-        //         time: timeSince(new Date(c.date)),
-        //         user: { name, avatarUrl }
-        //     }
-        // });
-
-        res.json({ok: true, comments: preparedComments})
-    });
+            res.json({ok: true, comments: preparedComments})
+        });
+    } catch (e) {
+        res.status(500).end();
+    }
 });
 
 module.exports = router;

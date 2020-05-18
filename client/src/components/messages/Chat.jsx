@@ -9,9 +9,7 @@ import socket from "../../socket";
 
 const Chat = (props) => {
     const {backToMessages, chatLoading, user,
-        companionId, fetchChat, actionUpdateChatStatus, actionSendMessage, addChatMessage} = props;
-
-    console.log(companionId);
+        companionId, fetchChat, actionUpdateChatStatus, actionSendMessage} = props;
 
     const [message, setMessage] = useState('');
     const chatMessages = useSelector(state => state.chat.messages);
@@ -28,21 +26,31 @@ const Chat = (props) => {
     }, []);
 
     useEffect(() => {
-        // listContainer.current.scrollTop = listContainer.current.scrollHeight;
+        if (listContainer.current) {
+            listContainer.current.scrollTop = listContainer.current.scrollHeight;
+        }
     }, [chatMessages]);
 
     const sendMessage = (text, companion) => {
-        const newMessage = {name: user.name, text};
+        const newMessage = {
+            name: user.name,
+            text,
+            avatarUrl: user.avatarUrl
+        };
         const date = Date.now();
-        actionSendMessage(companion, user, newMessage, date);
-        socket.emit('sendMessage', {toId: companionId, fromId: user.id, companion, date, message: newMessage});
+        actionSendMessage(companion, user, newMessage, date)
+            .then(e => {
+                socket.emit('sendMessage', {toId: companionId, fromId: user.id, companion, date, message: newMessage});
+            })
+            .catch(e => {});
     };
 
     const submitForm = (e) => {
         e.preventDefault();
         const companionData = {
             id: companionId,
-            name: companion.name
+            name: companion.name,
+            avatarUrl: companion.avatarUrl
         };
         sendMessage(message, companionData);
         setMessage('');
@@ -83,7 +91,7 @@ const Chat = (props) => {
                 </div>
                 <div className="chat__right">
                     <div className="chat__companion">
-                        {companion.name || <Spinner /> }
+                        {(companion.name || !chatLoading) || <Spinner /> }
                     </div>
                 </div>
             </div>

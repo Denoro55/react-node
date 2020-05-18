@@ -19,8 +19,14 @@ const chatReducer = (state = initialState, action) => {
                 ...state,
                 messages: action.payload.messages,
                 companion: {
-                    name: action.payload.companion.name,
+                    ...action.payload.companion
                 },
+                loading: false
+            };
+
+        case 'FETCH_CHAT_FAILURE':
+            return {
+                ...state,
                 loading: false
             };
 

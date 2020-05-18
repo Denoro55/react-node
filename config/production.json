@@ -1,5 +1,5 @@
 {
-    "PORT": 3000,
+    "PORT": 5000,
     "jwtSecret": "Secret Node Key",
     "mongoUri": "mongodb+srv://Denis:MELCWnjndlxWxV0Y@denis-ikstw.mongodb.net/node-react"
 }

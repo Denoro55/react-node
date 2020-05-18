@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import {connect} from 'react-redux'
 import ProfileMain from "../user/profile-main";
 import {useSelector} from "react-redux";
@@ -15,6 +15,10 @@ const Followers = (props) => {
         followersCount, followingCount, imagesCount, postsCount
     };
 
+    const fetchFunc = useCallback((...args) => {
+        return apiService.fetchFollowers(...args);
+    }, []);
+
     return (
         <div className="profile">
             <div className="profile__top">
@@ -27,7 +31,7 @@ const Followers = (props) => {
             </div>
             <div className="profile__bottom">
                 <div className="container">
-                    <Users fetchFunc={apiService.fetchFollowers.bind(apiService)} />
+                    <Users fetchFunc={fetchFunc} />
                 </div>
             </div>
         </div>
