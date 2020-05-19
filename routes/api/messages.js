@@ -48,6 +48,7 @@ router.post('/sendMessage', authMiddleware, async (req, res) => {
 
         res.json({success: true});
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });

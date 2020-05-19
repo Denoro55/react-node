@@ -19,6 +19,7 @@ import {withApiService} from "../hoc";
 import {connect} from "react-redux";
 import {sortMessagesList, updateMessageInList} from "../../store/actions/messageActions";
 import {addChatMessage} from "../../store/actions/chatActions";
+import {actionUpdateUserCounters} from '../../store/actions'
 import {bindActionCreators} from "redux";
 
 import socket from "../../socket";
@@ -40,11 +41,11 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        const {apiService, updateMessageInList, addChatMessage, getUserData} = this.props;
+        const {apiService, updateMessageInList, addChatMessage, getUserData, actionUpdateUserCounters} = this.props;
 
-        setInterval(() => {
-            getUserData(apiService, this.getUser().token);
-        }, 5000);
+        // setInterval(() => {
+        //     getUserData(apiService, this.getUser().token);
+        // }, 5000);
 
         // messages from me and others
         socket.on('getMessage', (data) => {
@@ -78,6 +79,15 @@ class App extends React.Component {
                 }
             }
         });
+
+        socket.on('follow', (data) => {
+            const {userPageId, isFollowing} = data;
+            const num = isFollowing ? 1 : -1;
+
+            actionUpdateUserCounters({
+                followersCount: this.getUser().followersCount + num
+            })
+        })
     }
 
     render() {
@@ -123,6 +133,7 @@ const mapDispatchToProps = (dispatch) => {
             updateMessageInList,
             sortMessagesList,
             addChatMessage,
+            actionUpdateUserCounters
         }, dispatch)
     }
 };

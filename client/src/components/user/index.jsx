@@ -10,6 +10,8 @@ import ProfileMain from "./profile-main"
 
 import {getUserInfo} from "../../helpers"
 
+import socket from "../../socket";
+
 import './style.css'
 import Spinner from "../spinner";
 
@@ -27,30 +29,140 @@ const User = (props) => {
     } = props;
 
     const isOwner = !isUserPage;
+    const wallId = isUserPage ? userPageId : user.id;
 
     const [userData, setUserData] = useState({});
     const [loading, setLoading] = useState(true);
+    const [removedPost, setRemovedPost] = useState(null);
 
-    const [posts, setPosts] = useState([]);
-    const [postsUI, setPostsUI] = useState([]);
+    const [posts, setPosts] = useState({
+        items: [],
+        itemsUI: {}
+    });
 
-    const getPostsInterface = (posts) => {
-        return posts.reduce(function(acc, p) {
+    const getPostsInterface = (newPosts) => {
+        const postsUI = posts.itemsUI;
+
+        return newPosts.reduce(function(acc, p) {
+            const isOpened = (postsUI[p._id] && postsUI[p._id].commentsOpened) || false;
             return {...acc, [p._id]: {
-                    commentsOpened: false
-                }}
+                commentsOpened: isOpened
+            }}
         }, {});
     };
 
-    const updatePosts = (posts) => {
-        setPostsUI(getPostsInterface(posts));
-        setPosts(posts);
+    const updateStatePosts = (newPosts) => {
+        const postsInterfaces = getPostsInterface(newPosts);
+        setPosts(state => {
+            return {
+                items: newPosts,
+                itemsUI: postsInterfaces
+            }
+        });
     };
+
+    const addStatePosts = (post) => {
+        setPosts(state => {
+            const newPosts = [post, ...state.items];
+            return {
+                items: newPosts,
+                itemsUI: getPostsInterface(newPosts)
+            }
+        });
+    };
+
+    const updateStatePostsUI = (newPostsUI) => {
+        setPosts(state => {
+            return {
+                items: posts.items,
+                itemsUI: newPostsUI
+            }
+        });
+    };
+
+    const removeStatePostsById = (id) => {
+        setPosts(state => {
+            const posts = state.items;
+
+            const index = posts.findIndex(p => p._id === id);
+            const post =  posts[index];
+
+            const newItems = posts.filter(p => p._id !== id);
+
+            setRemovedPost(post);
+
+            return {
+                items: newItems,
+                itemsUI: getPostsInterface(newItems)
+            }
+        });
+    };
+
+    const fetchPosts = () => {
+        setLoading(true);
+        apiService.fetchPosts(user.id).then(res => {
+            updateStatePosts(res.body.posts);
+            setLoading(false);
+        }).catch(e => {
+            // console.log(e.message)
+            setLoading(false);
+        })
+    };
+
+    useEffect(() => {
+        socket.on('createPost', ({post}) => {
+            addPost(post);
+        });
+
+        socket.on('removePost', ({postId}) => {
+            removeStatePostsById(postId);
+        });
+
+        socket.on('likePost', ({post, userId}) => {
+            updatePostLikes(post, userId);
+        });
+
+        socket.on('createComment', ({comments, postId}) => {
+            updatePostComments(postId, comments);
+        });
+
+        socket.on('likeComment', ({comment, userId, postId}) => {
+            updateCommentLikes(postId, comment, userId);
+        });
+
+        return () => {
+            socket.off('createPost');
+            socket.off('removePost');
+            socket.off('likePost');
+            socket.off('createComment');
+            socket.off('likeComment');
+        }
+    }, []);
+
+    useEffect(() => {
+        if (removedPost) {
+            const postsCount = profileCounters.postsCount - 1;
+            const imagesCount = removedPost.imageUrl ? profileCounters.imagesCount - 1 : profileCounters.imagesCount;
+
+            updateProfileCounters({
+                postsCount,
+                imagesCount
+            });
+        }
+    }, [removedPost]);
+
+    // socket wall
+    useEffect(() => {
+        const wallId = isUserPage ? userPageId : user.id;
+        socket.emit('connectToWallId', {wallId});
+        return () => {
+            socket.emit('disconnectToWallId', {wallId})
+        }
+    }, []);
 
     useEffect(() => {
         if (isUserPage) {
             // other pages
-
             setLoading(true);
             apiService.getUserInfo(userPageId, user.id).then(res => {
                 const data = res.body.data;
@@ -71,10 +183,9 @@ const User = (props) => {
                     isFollowing: data.isFollowing
                 });
 
-                setPostsUI(getPostsInterface(data.posts));
-                setPosts(data.posts);
-
+                updateStatePosts(data.posts);
                 setLoading(false);
+
             }).catch(e => {
                 // console.log(e);
             })
@@ -87,15 +198,7 @@ const User = (props) => {
                 userId: user.id
             });
 
-            setLoading(true);
-
-            apiService.fetchPosts(user.id).then(res => {
-                updatePosts(res.body.posts);
-                setLoading(false);
-            }).catch(e => {
-                // console.log(e.message)
-                setLoading(false);
-            })
+            fetchPosts();
         }
     }, []);
 
@@ -120,98 +223,124 @@ const User = (props) => {
                 followingCount: client.followingCount,
                 followersCount: client.followersCount
             });
+            socket.emit('follow', {toId: userPageId, isFollowing});
         }).catch(e => {
 
         })
     };
 
     const toggleComments = (postId) => {
+        const postsUI = posts.itemsUI;
+
         const currentState = postsUI[postId].commentsOpened;
         const newState = {...postsUI, [postId]: {
                 commentsOpened: !currentState
         }};
-        setPostsUI(newState);
+
+        updateStatePostsUI(newState);
     };
 
     const updatePostComments = (postId, comments) => {
-        setPosts((state) => {
+        setPosts(posts => {
+            const state = posts.items;
+
             const index = state.findIndex((item) => item._id === postId);
+            const item = state[index];
             const newItem = {
-                ...state[index],
+                ...item,
                 comments
             };
 
-            return [...state.slice(0, index), newItem, ...state.slice(index + 1)];
-        });
-    };
+            const newItems = [...state.slice(0, index), newItem, ...state.slice(index + 1)];
 
-    const addPost = (post) => {
-        const postsInterface = {...postsUI, [post._id]: {commentsOpened: false}};
-        setPostsUI(postsInterface);
-        setPosts((state) => {
-            return [post, ...state]
-        });
+            const postsUI = posts.itemsUI;
+            const newItemsUI = newItems.reduce(function(acc, p) {
+                const isOpened = (postsUI[p._id] && postsUI[p._id].commentsOpened) || false;
+                return {...acc, [p._id]: {
+                        commentsOpened: isOpened
+                    }}
+            }, {});
 
-        const postsCount = profileCounters.postsCount + 1;
-        const imagesCount = post.imageUrl ? profileCounters.imagesCount + 1 : profileCounters.imagesCount;
-
-        updateProfileCounters({
-            postsCount,
-            imagesCount
+            return {
+                items: newItems,
+                itemsUI: newItemsUI
+            }
+            // updateStatePosts(newPosts);
         })
     };
 
-    const updatePostLikes = (post) => {
-        setPosts((state) => {
-            const {_id, ...newParams} = post;
+    const addPost = (post) => {
+        const imagesDiff = post.imageUrl ? 1 : 0;
+
+        updateProfileCounters((currentState) => {
+            return {
+                postsCount: currentState.postsCount + 1,
+                imagesCount: currentState.imagesCount + imagesDiff
+            }
+        });
+
+        addStatePosts(post);
+    };
+
+    const updatePostLikes = (post, userId) => {
+        setPosts((posts) => {
+            const state = posts.items;
+
+            const {_id, likesCount, isLiked} = post;
             const index = state.findIndex((item) => item._id === _id);
+            const item = state[index];
+
             const newItem = {
-                ...state[index],
-                ...newParams
+                ...item,
+                likesCount,
+                isLiked: user.id.toString() === userId.toString() ? isLiked : item.isLiked
             };
 
-            return [...state.slice(0, index), newItem, ...state.slice(index + 1)];
+            const newItems = [...state.slice(0, index), newItem, ...state.slice(index + 1)];
+
+            return {
+                items: newItems,
+                itemsUI: getPostsInterface(newItems)
+            }
         });
     };
 
-    const updateCommentLikes = (postId, comment) => {
-        setPosts((state) => {
-            const {_id, ...newParams} = comment;
+    const updateCommentLikes = (postId, comment, userId) => {
+        setPosts((posts) => {
+            const state = posts.items;
+
+            const {_id, isLiked, likesCount} = comment;
             const postIndex = state.findIndex((item) => item._id === postId);
             const post = state[postIndex];
             const commentIndex = post.comments.findIndex((item) => item._id === comment._id);
             const c = post.comments[commentIndex];
             const newComment = {
                 ...c,
-                ...newParams
+                likesCount,
+                isLiked: user.id.toString() === userId.toString() ? isLiked : c.isLiked
             };
             const newItem = {
                 ...post,
                 comments: [...post.comments.slice(0, commentIndex), newComment, ...post.comments.slice(commentIndex + 1)]
             };
 
-            return [...state.slice(0, postIndex), newItem, ...state.slice(postIndex + 1)];
-        });
+            const newItems = [...state.slice(0, postIndex), newItem, ...state.slice(postIndex + 1)];
+
+            const postsUI = posts.itemsUI;
+            const newItemsUI = newItems.reduce(function(acc, p) {
+                const isOpened = (postsUI[p._id] && postsUI[p._id].commentsOpened) || false;
+                return {...acc, [p._id]: {
+                        commentsOpened: isOpened
+                    }}
+            }, {});
+
+            return {
+                items: newItems,
+                itemsUI: newItemsUI
+            }
+        })
     };
 
-    const removePostById = (id) => {
-        const index = posts.findIndex(p => p._id === id);
-        const post = posts[index];
-
-        const postsCount = profileCounters.postsCount - 1;
-        const imagesCount = post.imageUrl ? profileCounters.imagesCount - 1 : profileCounters.imagesCount;
-
-        updateProfileCounters({
-            postsCount,
-            imagesCount
-        });
-
-        setPosts((state) => {
-            return state.filter(p => p._id !== id);
-        });
-    };
-
-    // const {userName, userId, followersCount, followingCount, postsCount, imagesCount, isFollowing} = userData;
     const {userName, userId, isFollowing} = userData;
 
     return (
@@ -249,7 +378,7 @@ const User = (props) => {
                             <div className="profile-wall">
                                 <div className="profile-wall__top">
                                     <div className="profile-wall__create">
-                                        <PostCreate apiService={apiService} user={props.user} wallId={userId} addPost={addPost} updatePosts={updatePosts} />
+                                        <PostCreate apiService={apiService} user={props.user} wallId={userId} addPost={addPost} updatePosts={updateStatePosts} />
                                     </div>
                                     {
                                         loading ? (
@@ -260,10 +389,10 @@ const User = (props) => {
                                 <ProfileWallList
                                     isOwner={isOwner}
                                     posts={posts}
-                                    postsUI={postsUI}
                                     apiService={apiService}
                                     user={user}
-                                    removePostById={removePostById}
+                                    wallId={wallId}
+                                    removePostById={removeStatePostsById}
                                     updatePostLikes={updatePostLikes}
                                     updatePostComments={updatePostComments}
                                     toggleComments={toggleComments}

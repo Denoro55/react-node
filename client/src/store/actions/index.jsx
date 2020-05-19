@@ -14,6 +14,7 @@ export const actionGetUserDataSuccess = (payload) => ({type: 'GET_USER_SUCCESS',
 export const actionGetUserDataFailure = () => ({type: 'GET_USER_FAILURE'});
 export const actionGetUserData = () => ({type: 'GET_USER'});
 export const actionUpdateUserData = (payload) => ({type: 'USER_DATA_UPDATE', payload});
+export const actionUpdateUserCounters = (payload) => ({type: 'USER_COUNTERS_UPDATE', payload});
 
 export const getUserData = (apiService, token) => () => (dispatch) => {
     dispatch(actionGetUserData());

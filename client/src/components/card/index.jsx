@@ -8,6 +8,7 @@ import './style.css'
 import {bindActionCreators} from "redux"
 import {actionUpdateUserData} from "../../store/actions"
 import {connect} from "react-redux"
+import socket from "../../socket";
 
 const UserCard = (props) => {
     const {
@@ -41,6 +42,7 @@ const UserCard = (props) => {
                     followingCount: client.followingCount,
                     followersCount: client.followersCount
                 });
+                socket.emit('follow', {toId: cardId, isFollowing});
             }
         }).catch(e => {
             console.log(e);

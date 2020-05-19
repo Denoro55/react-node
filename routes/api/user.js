@@ -145,6 +145,7 @@ router.post('/follow', authMiddleware, async (req, res) => {
         res.json({ ok: true, isFollowing: !isFollowing, ...response });
 
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -160,6 +161,7 @@ router.post('/uploadAvatar', authMiddleware, fileMiddleware.single('avatar'), as
 
         res.json({avatarUrl: filename});
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });

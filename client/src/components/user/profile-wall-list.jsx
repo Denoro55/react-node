@@ -1,8 +1,9 @@
 import React, {useContext} from "react";
 import VariableProvider from '../context/vars'
+import socket from "../../socket";
 
 const ProfileWallList = (props) => {
-    const {posts, postsUI, isOwner = false, user, apiService, removePostById, toggleComments, updatePostLikes, updatePostComments, updateCommentLikes} = props;
+    const {posts, isOwner = false, user, apiService, removePostById, wallId, toggleComments, updatePostLikes, updatePostComments, updateCommentLikes} = props;
     const {publicPath} = useContext(VariableProvider);
 
     const createComment = (e, postId) => {
@@ -10,7 +11,13 @@ const ProfileWallList = (props) => {
         const text = e.target.elements[0].value;
         if (text) {
             apiService.createComment(user.id, postId, text).then((res) => {
-                updatePostComments(postId, res.body.comments);
+                const { comments } = res.body;
+                // updatePostComments(postId, res.body.comments);
+                socket.emit('createComment', {
+                    comments,
+                    postId,
+                    toId: wallId,
+                });
             }).catch(e => {
                 // console.log(e.message)
             });
@@ -18,9 +25,30 @@ const ProfileWallList = (props) => {
         }
     };
 
+    const likeComment = (commentId, isLiked, postId) => {
+        apiService.likeComment(user.id, commentId, isLiked).then(res => {
+            if (res.body.ok) {
+                const { comment } = res.body;
+                socket.emit('likeComment', {
+                    comment,
+                    userId: user.id,
+                    toId: wallId,
+                    postId
+                });
+                // updateCommentLikes(postId, comment);
+            }
+        }).catch(e => {
+            console.log(e.message)
+        })
+    };
+
     const removePost = (id) => {
         apiService.removePost(id).then((res) => {
-            removePostById(id);
+            socket.emit('removePost', {
+                postId: id,
+                toId: wallId
+            });
+            // removePostById(id);
         }).catch(e => {
             // console.log(e.message)
         })
@@ -30,21 +58,15 @@ const ProfileWallList = (props) => {
         apiService.likePost(user.id, postId, isLiked).then(res => {
             if (res.body.ok) {
                 const { post } = res.body;
-                updatePostLikes(post);
+                socket.emit('likePost', {
+                    post,
+                    userId: user.id,
+                    toId: wallId,
+                });
+                // updatePostLikes(post);
             }
         }).catch(e => {
             // console.log(e.message)
-        })
-    };
-
-    const likeComment = (commentId, isLiked, postId) => {
-        apiService.likeComment(user.id, commentId, isLiked).then(res => {
-            if (res.body.ok) {
-                const { comment } = res.body;
-                updateCommentLikes(postId, comment);
-            }
-        }).catch(e => {
-            console.log(e.message)
         })
     };
 
@@ -168,7 +190,7 @@ const ProfileWallList = (props) => {
             <>
                 { topHtml }
                 {
-                    postsUI[post._id].commentsOpened ? (
+                    posts.itemsUI[post._id].commentsOpened ? (
                         <div className="profile-post__comments">
                             <div className="post-comment">
                                 {
@@ -205,7 +227,7 @@ const ProfileWallList = (props) => {
     };
 
     const renderPosts = () => {
-        return posts.map((post) => {
+        return posts.items.map((post) => {
             const isPhotoPost = post.imageUrl && !post.text;
             const typeText = isPhotoPost ? 'a photo' : 'an article';
 
@@ -238,6 +260,8 @@ const ProfileWallList = (props) => {
             )
         })
     };
+
+    console.log('render wall list');
 
     return (
         <div className="profile-wall__list">

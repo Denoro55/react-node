@@ -1,8 +1,9 @@
-import React, {useRef, useState} from "react";
+import React, {useRef, useState} from "react"
 import cn from 'classnames'
+import socket from "../../socket";
 
 const PostCreate = (props) => {
-    const {apiService, user, addPost, updatePosts, wallId} = props;
+    const {apiService, user, wallId} = props;
 
     const [postText, setPostText] = useState('');
     const [postImageSrc, setPostImageSrc] = useState(null);
@@ -46,6 +47,7 @@ const PostCreate = (props) => {
         setPostText('');
         setPostImageSrc(null);
         postSubmitButton.current.blur();
+        postFileInput.current.value = null;
     };
 
     const createPost = (e) => {
@@ -62,8 +64,20 @@ const PostCreate = (props) => {
 
             apiService.createPost(data).then(res => {
                 resetForm();
-                updatePosts(res.body.posts);
+                // updatePosts(res.body.posts);
                 // addPost(res.body.post);
+
+                socket.emit('createPost', {
+                    post: res.body.post,
+                    toId: wallId
+                })
+
+                // if (user.id.toString() !== wallId.toString()) {
+                //     socket.emit('createPost', {
+                //         post: res.body.post,
+                //         toId: wallId
+                //     })
+                // }
             }).catch(e => {
 
             })

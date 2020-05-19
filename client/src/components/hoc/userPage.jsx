@@ -9,12 +9,22 @@ const UserPage = (props) => {
     const [profileCounters, setProfileCounters] = useState({});
 
     const updateProfileCounters = (params) => {
-        setProfileCounters((state) => {
-            return {
-                ...state,
-                ...params
-            }
-        });
+        if (typeof params === 'function') {
+            setProfileCounters((state) => {
+                const newParams = params(state);
+                return {
+                    ...state,
+                    ...newParams
+                }
+            });
+        } else {
+            setProfileCounters((state) => {
+                return {
+                    ...state,
+                    ...params
+                }
+            });
+        }
     };
 
     return <User

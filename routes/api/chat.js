@@ -35,6 +35,7 @@ router.post('/chatMessages', async (req, res) => {
 
         res.json({companion: {name: companion.name, avatarUrl: companion.avatarUrl}, messages: preparedMessages});
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });

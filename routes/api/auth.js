@@ -43,6 +43,7 @@ router.post('/login', LoginValidator, async (req, res) => {
             return res.status(400).json({errors: [], message: 'Passwords are not identical'});
         }
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -73,6 +74,7 @@ router.post('/register', RegisterValidator, async (req, res) => {
 
         res.status(201).json({message: 'You have successfully registered!'});
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -102,6 +104,7 @@ router.post('/userData', authMiddleware, async (req, res) => {
 
         return res.json({data});
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });

@@ -24,6 +24,21 @@ const userReducer = (state = initialState, action) => {
                 ...action.payload
             };
 
+        case 'USER_COUNTERS_UPDATE':
+            const exec = typeof action.payload === 'function' ? action.payload : false;
+
+            let newParams;
+            if (exec) {
+                newParams = exec(state);
+            } else {
+                newParams = action.payload;
+            }
+
+            return {
+                ...state,
+                ...newParams
+            };
+
         case 'USER_UNAUTHORIZE':
             return {...initialState};
 

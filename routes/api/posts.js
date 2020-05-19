@@ -20,13 +20,14 @@ router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async
     const {id, wallId, text} = req.body;
 
     try {
+        var start = new Date();
+
         if (req.user.userId.toString() !== id.toString()) {
             return res.status(401).json({message: 'Unauthorized'});
         }
 
         let filename;
         const user = await User.findOne({_id: id});
-        const wallOwner = await User.findOne({_id: wallId});
 
         if (req.file) {
             filename = req.file.filename;
@@ -42,9 +43,13 @@ router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async
 
         await post.save();
 
-        await wallOwner.updateOne({
-            "$push": { "posts": ObjectId(post._id) }
-        });
+        await User.findOneAndUpdate(
+            {
+                _id: wallId
+            },
+            {
+                "$push": { "posts": ObjectId(post._id) }
+            });
 
         const {_doc: {owner, ...rest}} = post;
 
@@ -59,8 +64,12 @@ router.post('/createPost', authMiddleware, fileMiddleware.single('image'), async
         const posts = await Post.aggregate(postsAggregations(wallId));
         const preparedPosts = preparePosts(posts);
 
+        var end = new Date() - start;
+        console.info('Execution time: %dms', end);
+
         res.json({ post: preparedPost, posts: preparedPosts });
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -74,6 +83,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
 
         res.json({ posts: preparedPosts })
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -83,6 +93,7 @@ router.delete('/posts', authMiddleware, async (req, res) => {
     const {userId} = req.user;
 
     try {
+
         const post = await Post.findOne({
             _id: id,
             $or: [
@@ -179,6 +190,7 @@ router.post('/postLike', authMiddleware, async (req, res) => {
                 })
         }
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -245,6 +257,7 @@ router.post('/likeComment', authMiddleware, async (req, res) => {
                 })
         }
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
@@ -299,6 +312,7 @@ router.post('/createComment', authMiddleware, async (req, res) => {
             res.json({ok: true, comments: preparedComments})
         });
     } catch (e) {
+        console.log(e);
         res.status(500).end();
     }
 });
