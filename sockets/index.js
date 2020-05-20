@@ -35,6 +35,11 @@ module.exports = function(io) {
             io.to(getWallRoom(toId)).emit('createPost', {post});
         });
 
+        socket.on('sendPostData', function(data) {
+            const { post, toId } = data;
+            io.to(toId).emit('sendPostData', {post});
+        });
+
         socket.on('removePost', function(data) {
             const { postId, toId } = data;
             io.to(getWallRoom(toId)).emit('removePost', {postId});

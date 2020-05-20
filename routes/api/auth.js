@@ -96,6 +96,7 @@ router.post('/userData', authMiddleware, async (req, res) => {
             name: user.name,
             id: user._id,
             avatarUrl: user.avatarUrl,
+            backgroundUrl: user.backgroundUrl,
             followersCount: user.followers.length || 0,
             followingCount: user.following.length || 0,
             postsCount: posts.length,

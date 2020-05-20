@@ -11,7 +11,7 @@ const Search = (props) => {
     const {apiService} = props;
     const user = useSelector(state => state.user);
 
-    const {followersCount, followingCount, imagesCount, postsCount, avatarUrl, name} = user;
+    const {followersCount, followingCount, imagesCount, postsCount, avatarUrl, backgroundUrl, name} = user;
 
     const [result, setResult] = useState('');
     const [match, setMatch] = useState('');
@@ -39,6 +39,7 @@ const Search = (props) => {
                 <ProfileMain
                     profileCounters={profileCounters}
                     avatarUrl={avatarUrl}
+                    backgroundUrl={backgroundUrl}
                     userName={name}
                     isOwner={true}
                 />

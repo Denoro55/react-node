@@ -2,6 +2,12 @@
     position: relative;
     height: 330px;
 
+    &:hover {
+        .profile-main__update-bg {
+            opacity: 1;
+        }
+    }
+
     &__background {
         position: absolute;
         right: 0;
@@ -11,6 +17,33 @@
         filter: blur(2px);
         background-position: 50% 80%;
         background-size: cover;
+
+        & > div {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        &-new {
+            opacity: 0;
+            transition: all .3s;
+        }
+
+        &:after {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(black, .5);
+            opacity: 0;
+        }
     }
 
     &__info {
@@ -20,42 +53,18 @@
         bottom: 0;
     }
 
-    //&__avatar {
-    //    position: absolute;
-    //    transform: translateY(-50%);
-    //    top: 0;
-    //    //left: 0;
-    //    //right: 0;
-    //    //bottom: 0;
-    //
-    //    &-image {
-    //        position: relative;
-    //        width: 250px;
-    //        height: 250px;
-    //        background-color: #ddd;
-    //        border-radius: 50%;
-    //        background-position: center;
-    //        background-size: cover;
-    //        border: 3px solid white;
-    //        overflow: hidden;
-    //        cursor: pointer;
-    //
-    //        &:hover {
-    //            .profile-main__avatar-form {
-    //                opacity: 1;
-    //            }
-    //        }
-    //    }
-    //
-    //    &-form {
-    //        opacity: 0;
-    //        transition: all .3s;
-    //    }
-    //
-    //    &-form.active {
-    //        opacity: 1;
-    //    }
-    //}
+    &__update-bg {
+        position: absolute;
+        right: 30px;
+        top: 30px;
+        z-index: 2;
+        opacity: 0;
+        transition: all .3s;
+
+        input {
+            //display: none;
+        }
+    }
 
     &__name {
         //position: absolute;
@@ -67,5 +76,17 @@
         font-size: 32px;
         font-weight: 500;
         min-height: 68px;
+    }
+}
+
+.profile-main.upload-bg {
+    .profile-main__background {
+        &:after {
+            opacity: 1;
+        }
+    }
+
+    .profile-main__background-new {
+        opacity: 1;
     }
 }

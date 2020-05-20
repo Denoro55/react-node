@@ -228,6 +228,8 @@
 .profile-main {
   position: relative;
   height: 330px; }
+  .profile-main:hover .profile-main__update-bg {
+    opacity: 1; }
   .profile-main__background {
     position: absolute;
     right: 0;
@@ -237,11 +239,39 @@
     filter: blur(2px);
     background-position: 50% 80%;
     background-size: cover; }
+    .profile-main__background > div {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background-size: cover;
+      background-position: center; }
+    .profile-main__background-new {
+      opacity: 0;
+      transition: all .3s; }
+    .profile-main__background:after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      opacity: 0; }
   .profile-main__info {
     position: absolute;
     width: 100%;
     left: 0;
     bottom: 0; }
+  .profile-main__update-bg {
+    position: absolute;
+    right: 30px;
+    top: 30px;
+    z-index: 2;
+    opacity: 0;
+    transition: all .3s; }
   .profile-main__name {
     left: 0;
     right: 0;
@@ -250,6 +280,11 @@
     font-size: 32px;
     font-weight: 500;
     min-height: 68px; }
+
+.profile-main.upload-bg .profile-main__background:after {
+  opacity: 1; }
+.profile-main.upload-bg .profile-main__background-new {
+  opacity: 1; }
 
 .avatar-form {
   position: absolute;
@@ -375,6 +410,11 @@
     justify-content: flex-end;
     width: 80px;
     flex-shrink: 0; }
+
+.update-bg input {
+  display: none; }
+.update-bg__action {
+  margin-left: 20px; }
 
 .profile-wall__item {
   margin-bottom: 30px; }

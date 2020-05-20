@@ -7,7 +7,8 @@ import {actionUpdateUserCounters} from "../../store/actions";
 const MePage = (props) => {
     const { actionUpdateUserCounters } = props;
     const user = useSelector(state => state.user);
-    const avatarUrl = useSelector(state => state.user.avatarUrl);
+    const avatarUrl = user.avatarUrl;
+    const backgroundUrl = user.backgroundUrl;
 
     const getCounters = () => {
         return {
@@ -26,6 +27,7 @@ const MePage = (props) => {
 
     return <User
         avatarUrl={avatarUrl}
+        backgroundUrl={backgroundUrl}
         profileCounters={profileCounters}
         updateProfileCounters={updateProfileCounters}
         {...props}

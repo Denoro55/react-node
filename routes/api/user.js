@@ -35,6 +35,13 @@ router.post('/userInfo', authMiddleware, async (req, res) => {
         const posts = await Post.aggregate(postsAggregations(userId, clientId));
         const preparedPosts = preparePosts(posts);
 
+        const allPosts = await Post.find({
+            wallOwner: userId
+        });
+
+        const postsWithImages = allPosts.filter(p => p.imageUrl);
+        const imagesCount = postsWithImages.length;
+
         const data = {
             name: user.name,
             id: user._id,
@@ -42,7 +49,9 @@ router.post('/userInfo', authMiddleware, async (req, res) => {
             isFollowing: user.isFollowing,
             followersCount: user.followers.length || 0,
             followingCount: user.following.length || 0,
-            posts: preparedPosts
+            postsCount: allPosts.length,
+            imagesCount: imagesCount,
+            posts: preparedPosts,
         };
 
         return res.json({data});
@@ -151,15 +160,43 @@ router.post('/follow', authMiddleware, async (req, res) => {
 });
 
 router.post('/uploadAvatar', authMiddleware, fileMiddleware.single('avatar'), async (req, res) => {
-    console.log('file is ', req.file);
+    const {userId} = req.user;
 
     try {
         const filename = req.file.filename;
 
-        const user = await User.findOne({_id: req.body.id});
-        await user.updateOne({avatarUrl: filename});
+        await User.findOneAndUpdate(
+            {
+                _id: userId
+            },
+            {
+                avatarUrl: filename
+            }
+        );
 
         res.json({avatarUrl: filename});
+    } catch (e) {
+        console.log(e);
+        res.status(500).end();
+    }
+});
+
+router.post('/uploadBackground', authMiddleware, fileMiddleware.single('background'), async (req, res) => {
+    const {userId} = req.user;
+
+    try {
+        const filename = req.file.filename;
+
+        await User.findOneAndUpdate(
+            {
+                _id: userId
+            },
+            {
+                backgroundUrl: filename
+            }
+        );
+
+        res.json({backgroundUrl: filename});
     } catch (e) {
         console.log(e);
         res.status(500).end();

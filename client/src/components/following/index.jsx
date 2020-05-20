@@ -9,7 +9,7 @@ const Following = (props) => {
     const {apiService} = props;
     const user = useSelector(state => state.user);
 
-    const {followersCount, followingCount, imagesCount, postsCount, avatarUrl, name} = user;
+    const {followersCount, followingCount, imagesCount, postsCount, avatarUrl, backgroundUrl, name} = user;
 
     const profileCounters = {
         followersCount, followingCount, imagesCount, postsCount
@@ -25,6 +25,7 @@ const Following = (props) => {
                 <ProfileMain
                     profileCounters={profileCounters}
                     avatarUrl={avatarUrl}
+                    backgroundUrl={backgroundUrl}
                     userName={name}
                     isOwner={true}
                 />

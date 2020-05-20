@@ -13,7 +13,7 @@ const logMiddleware = () => (next) => (action) => {
     return next(action);
 };
 
-const store = createStore(reducer, compose(applyMiddleware(reduxThunk, sagaMiddleware, logMiddleware)));
+const store = createStore(reducer, compose(applyMiddleware(reduxThunk, sagaMiddleware, logMiddleware), reduxDevTools));
 
 // sagaMiddleware.run(mySaga);
 

@@ -14,6 +14,7 @@ const ProfileMain = (props) => {
         profileCounters,
         isOwner,
         avatarUrl,
+        backgroundUrl,
         apiService,
         actionUpdateUserData
     } = props;
@@ -28,10 +29,12 @@ const ProfileMain = (props) => {
     const {publicPath} = useContext(VariableProvider);
 
     const avatarFileInput = useRef(null);
-    const user = useSelector(state => state.user);
+    const bgFileInput = useRef(null);
+    // const user = useSelector(state => state.user);
 
     const [avatarFormActive, setAvatarFormStatus] = useState(false);
     const [avatarPreviewImage, setAvatarPreviewImage] = useState(null);
+    const [bgPreview, setBgPreview] = useState(null);
 
     const avatarClasses = cn({
         'avatar-form': true,
@@ -43,7 +46,7 @@ const ProfileMain = (props) => {
 
         const data = new FormData();
         data.append('avatar', avatarFileInput.current.files[0]);
-        data.append('id', user.id);
+        // data.append('id', user.id);
 
         apiService.uploadAvatar(data).then(e => {
             resetAvatarForm();
@@ -78,10 +81,75 @@ const ProfileMain = (props) => {
         avatarFileInput.current.value = null;
     };
 
-    return (
-        <div className="profile-main">
-            <div className="profile-main__background" style={{backgroundImage: 'url(https://images2.alphacoders.com/209/thumb-1920-209080.jpg)'}}>
+    const resetBgForm = () => {
+        setBgPreview('');
+        bgFileInput.current.value = null;
+    };
 
+    const onUploadBackground = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            // setAvatarFormStatus(true);
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onloadend = function () {
+                const previewImage = reader.result;
+                setBgPreview(previewImage);
+            };
+
+        } else {
+            resetBgForm();
+        }
+    };
+
+    const onUploadBgClick = () => {
+        bgFileInput.current.click();
+    };
+
+    const updateBackground = (e) => {
+        e.preventDefault();
+
+        const data = new FormData();
+        data.append('background', bgFileInput.current.files[0]);
+
+        apiService.uploadBackground(data).then(e => {
+            resetBgForm();
+            actionUpdateUserData({
+                backgroundUrl: e.body.backgroundUrl
+            });
+        }).catch(e => {
+
+        })
+    };
+
+    const profileClasses = cn({
+        'profile-main': true,
+        'upload-bg': !!bgPreview
+    });
+
+    return (
+        <div className={profileClasses}>
+            <div className="profile-main__update-bg">
+                <div className="update-bg">
+                    <input onChange={onUploadBackground} ref={bgFileInput} type="file"/>
+                    {
+                        bgPreview ? (
+                            <>
+                                <div onClick={updateBackground} className="btn update-bg__action">Update</div>
+                                <div onClick={resetBgForm} className="btn btn-danger update-bg__action">Cancel</div>
+                            </>
+                        ) : <div onClick={onUploadBgClick} className="btn update-bg__action">Upload</div>
+                    }
+                </div>
+            </div>
+            <div className='profile-main__background'>
+                <div className='profile-main__background-current' style={{backgroundImage: `url(${publicPath}${backgroundUrl})`}}>
+                </div>
+                <div className='profile-main__background-new' style={{backgroundImage: `url(${bgPreview})`}}>
+                </div>
             </div>
             <div className="profile-main__info">
                 <div className="profile-info">

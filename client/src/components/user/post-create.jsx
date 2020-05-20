@@ -70,14 +70,16 @@ const PostCreate = (props) => {
                 socket.emit('createPost', {
                     post: res.body.post,
                     toId: wallId
-                })
+                });
 
-                // if (user.id.toString() !== wallId.toString()) {
-                //     socket.emit('createPost', {
-                //         post: res.body.post,
-                //         toId: wallId
-                //     })
-                // }
+                if (wallId.toString() !== user.id.toString()) {
+                    socket.emit('sendPostData', {
+                        post: {
+                            imageUrl: res.body.post.imageUrl
+                        },
+                        toId: wallId
+                    });
+                }
             }).catch(e => {
 
             })

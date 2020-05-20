@@ -25,6 +25,7 @@ const User = (props) => {
         profileCounters,
         updateProfileCounters,
         avatarUrl,
+        backgroundUrl,
         setAvatarUrl
     } = props;
 
@@ -166,14 +167,14 @@ const User = (props) => {
             setLoading(true);
             apiService.getUserInfo(userPageId, user.id).then(res => {
                 const data = res.body.data;
-                const {postsCount, imagesCount} = getUserInfo(data.posts);
+                // const {postsCount, imagesCount} = getUserInfo(data.posts);
 
                 setAvatarUrl(data.avatarUrl);
                 updateProfileCounters({
                     followersCount: data.followersCount,
                     followingCount: data.followingCount,
-                    postsCount,
-                    imagesCount
+                    postsCount: data.postsCount,
+                    imagesCount: data.imagesCount,
                 });
 
                 setUserData({
@@ -351,6 +352,7 @@ const User = (props) => {
                     isOwner={isOwner}
                     userName={userName}
                     avatarUrl={avatarUrl}
+                    backgroundUrl={backgroundUrl}
                 />
             </div>
             <div className="profile__bottom">

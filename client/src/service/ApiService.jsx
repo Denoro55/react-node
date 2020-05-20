@@ -28,8 +28,6 @@ class ApiService {
     }
 
     register(data) {
-        console.log(JSON.stringify(data));
-
         return this.getRequest('register', {
             method: 'POST',
             headers: {
@@ -40,12 +38,20 @@ class ApiService {
     }
 
     uploadAvatar(formData) {
-        const token = this.getToken();
-
         return this.getRequest('uploadAvatar', {
             method: 'POST',
             headers: {
-                'Authorization': token
+                'Authorization': this.getToken()
+            },
+            body: formData
+        });
+    }
+
+    uploadBackground(formData) {
+        return this.getRequest('uploadBackground', {
+            method: 'POST',
+            headers: {
+                'Authorization': this.getToken()
             },
             body: formData
         });

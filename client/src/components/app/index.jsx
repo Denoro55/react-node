@@ -81,11 +81,21 @@ class App extends React.Component {
         });
 
         socket.on('follow', (data) => {
-            const {userPageId, isFollowing} = data;
+            const {isFollowing} = data;
             const num = isFollowing ? 1 : -1;
 
             actionUpdateUserCounters({
                 followersCount: this.getUser().followersCount + num
+            })
+        });
+
+        socket.on('sendPostData', (data) => {
+            const {imageUrl} = data.post;
+            const imageCount = imageUrl ? 1 : 0;
+
+            actionUpdateUserCounters({
+                postsCount: this.getUser().postsCount + 1,
+                imagesCount: this.getUser().imagesCount + imageCount
             })
         })
     }
