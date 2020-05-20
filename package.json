@@ -9,8 +9,7 @@
         "server": "cross-env NODE_ENV=development nodemon ./index.js",
         "start": "cross-env NODE_ENV=production node ./index.js",
         "dev": "concurrently \"npm run server\" \"npm run client\"",
-        "build": "npm run build --prefix ./client",
-        "heroku-postbuild": "ng build --prod"
+        "build": "cd client && npm i && npm run build"
     },
     "keywords": [],
     "author": "",
@@ -34,5 +33,9 @@
     },
     "devDependencies": {
         "cross-env": "^7.0.2"
+    },
+    "engines": {
+        "node": "12.13.0",
+        "npm": "6.12.0"
     }
 }
