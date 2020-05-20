@@ -37,7 +37,7 @@ app.get('/server', function (req, res) {
 const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
 
-sockets(io);
+sockets(io, PORT);
 
 async function start() {
     await mongoose.connect(config.get('mongoUri'), {useNewUrlParser: true, useFindAndModify: false});

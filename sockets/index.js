@@ -1,10 +1,9 @@
-const os = require("os");
 const WALL_PREFIX_ROOM = 'WALL_';
 
 const getWallRoom = (id) => `${WALL_PREFIX_ROOM}${id}`;
 
-module.exports = function(io) {
-    io.origins(['https://vast-depths-03209.herokuapp.com']);
+module.exports = function(io, port) {
+    io.origins([`https://vast-depths-03209.herokuapp.com:${port}`]);
 
     io.on('connection', (socket) => {
         console.log('a user connected');
