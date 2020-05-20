@@ -5,6 +5,7 @@ const UserPage = (props) => {
     const userId = props.computedMatch.params.id;
 
     const [avatarUrl, setAvatarUrl] = useState(null);
+    const [backgroundUrl, setBackgroundUrl] = useState(null);
 
     const [profileCounters, setProfileCounters] = useState({});
 
@@ -30,6 +31,8 @@ const UserPage = (props) => {
     return <User
         setAvatarUrl={setAvatarUrl}
         avatarUrl={avatarUrl}
+        backgroundUrl={backgroundUrl}
+        setBackgroundUrl={setBackgroundUrl}
         userPageId={userId}
         profileCounters={profileCounters}
         updateProfileCounters={updateProfileCounters}

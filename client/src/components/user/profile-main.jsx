@@ -26,7 +26,7 @@ const ProfileMain = (props) => {
         followersCount = 0,
     } = profileCounters;
 
-    const {publicPath} = useContext(VariableProvider);
+    const {publicPath, errorImageUrl} = useContext(VariableProvider);
 
     const avatarFileInput = useRef(null);
     const bgFileInput = useRef(null);
@@ -132,24 +132,32 @@ const ProfileMain = (props) => {
 
     return (
         <div className={profileClasses}>
-            <div className="profile-main__update-bg">
-                <div className="update-bg">
-                    <input onChange={onUploadBackground} ref={bgFileInput} type="file"/>
-                    {
-                        bgPreview ? (
-                            <>
-                                <div onClick={updateBackground} className="btn update-bg__action">Update</div>
-                                <div onClick={resetBgForm} className="btn btn-danger update-bg__action">Cancel</div>
-                            </>
-                        ) : <div onClick={onUploadBgClick} className="btn update-bg__action">Upload</div>
-                    }
-                </div>
-            </div>
+            {
+                isOwner ? (
+                    <div className="profile-main__update-bg">
+                        <div className="update-bg">
+                            <input onChange={onUploadBackground} ref={bgFileInput} type="file"/>
+                            {
+                                bgPreview ? (
+                                    <>
+                                        <div onClick={updateBackground} className="btn update-bg__action">Update</div>
+                                        <div onClick={resetBgForm} className="btn btn-danger update-bg__action">Cancel</div>
+                                    </>
+                                ) : <div onClick={onUploadBgClick} className="btn update-bg__action">Upload</div>
+                            }
+                        </div>
+                    </div>
+                ) : null
+            }
             <div className='profile-main__background'>
                 <div className='profile-main__background-current' style={{backgroundImage: `url(${publicPath}${backgroundUrl})`}}>
                 </div>
-                <div className='profile-main__background-new' style={{backgroundImage: `url(${bgPreview})`}}>
-                </div>
+                {
+                    isOwner ? (
+                        <div className='profile-main__background-new' style={{backgroundImage: `url(${bgPreview})`}}>
+                        </div>
+                    ) : null
+                }
             </div>
             <div className="profile-main__info">
                 <div className="profile-info">

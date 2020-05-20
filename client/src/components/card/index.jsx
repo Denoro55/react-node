@@ -25,7 +25,7 @@ const UserCard = (props) => {
         updateUser
     } = props;
 
-    const {publicPath} = useContext(VariableProvider);
+    const {publicPath, errorImageUrl} = useContext(VariableProvider);
 
     const follow = (cardId) => {
         apiService.follow(_id, cardId, isFollowing).then(res => {

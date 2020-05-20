@@ -1,4 +1,4 @@
 import openSocket from 'socket.io-client';
-const socket = openSocket(window.location.host);
+const socket = openSocket('https://vast-depths-03209.herokuapp.com/');
 
 export default socket;

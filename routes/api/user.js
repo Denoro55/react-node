@@ -46,6 +46,7 @@ router.post('/userInfo', authMiddleware, async (req, res) => {
             name: user.name,
             id: user._id,
             avatarUrl: user.avatarUrl,
+            backgroundUrl: user.backgroundUrl,
             isFollowing: user.isFollowing,
             followersCount: user.followers.length || 0,
             followingCount: user.following.length || 0,

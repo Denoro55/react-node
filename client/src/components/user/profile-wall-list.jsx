@@ -4,7 +4,7 @@ import socket from "../../socket";
 
 const ProfileWallList = (props) => {
     const {posts, isOwner = false, user, apiService, removePostById, wallId, toggleComments, updatePostLikes, updatePostComments, updateCommentLikes} = props;
-    const {publicPath} = useContext(VariableProvider);
+    const {publicPath, errorImageUrl} = useContext(VariableProvider);
 
     const createComment = (e, postId) => {
         e.preventDefault();
@@ -112,7 +112,7 @@ const ProfileWallList = (props) => {
     const renderPostImage = (post, info = true) => {
         return (
             <div className="profile-post__image">
-                <img src={`${publicPath}${post.imageUrl}`} alt=""/>
+                <img onError={(e) => e.target.src = `${errorImageUrl}`} src={`${publicPath}${post.imageUrl}`} alt=""/>
                 {
                     info ? renderPostInfo(post) : null
                 }

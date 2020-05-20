@@ -8,8 +8,6 @@ import PostCreate from "./post-create"
 import ProfileWallList from "./profile-wall-list"
 import ProfileMain from "./profile-main"
 
-import {getUserInfo} from "../../helpers"
-
 import socket from "../../socket";
 
 import './style.css'
@@ -25,8 +23,9 @@ const User = (props) => {
         profileCounters,
         updateProfileCounters,
         avatarUrl,
+        setAvatarUrl,
         backgroundUrl,
-        setAvatarUrl
+        setBackgroundUrl
     } = props;
 
     const isOwner = !isUserPage;
@@ -170,6 +169,7 @@ const User = (props) => {
                 // const {postsCount, imagesCount} = getUserInfo(data.posts);
 
                 setAvatarUrl(data.avatarUrl);
+                setBackgroundUrl(data.backgroundUrl);
                 updateProfileCounters({
                     followersCount: data.followersCount,
                     followingCount: data.followingCount,
