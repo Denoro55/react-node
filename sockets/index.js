@@ -1,17 +1,21 @@
+const os = require("os");
 const WALL_PREFIX_ROOM = 'WALL_';
 
 const getWallRoom = (id) => `${WALL_PREFIX_ROOM}${id}`;
 
 module.exports = function(io) {
+    io.origins(['https://vast-depths-03209.herokuapp.com']);
+
     io.on('connection', (socket) => {
         console.log('a user connected');
 
         socket.on('connected', function(data) {
+            const {id} = data;
             console.log('socket connected', data);
 
             // room id of one user with a multiple tabs
-            console.log('join room', data.id);
-            socket.join(data.id);
+            console.log('join room', id);
+            socket.join(id);
 
             // if (!users[data.id]) {
             //     users[data.id] = [];
