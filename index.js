@@ -37,7 +37,9 @@ app.get('/server', function (req, res) {
 const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
 
-sockets(io, PORT);
+console.log(`vast-depths-03209.herokuapp.com:${PORT}`);
+io.origins([`vast-depths-03209.herokuapp.com:${PORT}`]);
+sockets(io);
 
 async function start() {
     await mongoose.connect(config.get('mongoUri'), {useNewUrlParser: true, useFindAndModify: false});
