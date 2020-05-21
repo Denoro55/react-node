@@ -37,8 +37,12 @@ app.get('/server', function (req, res) {
 const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
 
-console.log(`vast-depths-03209.herokuapp.com:${PORT}`);
-io.origins([`vast-depths-03209.herokuapp.com:*`]);
+console.log('------ ENVIRONMENT: ----------', process.env);
+
+if (process.env.NODE_ENV !== 'development') {
+    io.origins([`vast-depths-03209.herokuapp.com:*`]);
+}
+
 sockets(io);
 
 async function start() {
