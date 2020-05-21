@@ -38,7 +38,7 @@ const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
 
 console.log(`vast-depths-03209.herokuapp.com:${PORT}`);
-io.origins([`http://vast-depths-03209.herokuapp.com:*`]);
+io.origins([`https://vast-depths-03209.herokuapp.com:*`]);
 sockets(io);
 
 async function start() {
