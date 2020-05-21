@@ -10,7 +10,7 @@ const sockets = require('./sockets');
 const config = require('config');
 const PORT = process.env.PORT || config.get('PORT');
 
-// app.use(cors());
+app.use(cors());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json({limit: '50mb'}));
 app.use(session({
@@ -38,7 +38,7 @@ const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
 
 console.log(`vast-depths-03209.herokuapp.com:${PORT}`);
-io.origins([`https://vast-depths-03209.herokuapp.com:*`]);
+io.origins([`vast-depths-03209.herokuapp.com:*`]);
 sockets(io);
 
 async function start() {
